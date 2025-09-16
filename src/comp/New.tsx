@@ -7,34 +7,68 @@ import NodePanel from '../components/NodePanel';
 import PropertyPanel from '../components/PropertyPanel';
 import { PsyLangCodeGenerator } from '../utils/codeGenerator';
 
-// 工具函数：检查Handle是否已连接
-const isHandleConnected = (nodeId: string, handleId: string | undefined, handleType: 'source' | 'target', edges: Edge[]): boolean => {
-  return edges.some(edge => {
-    if (handleType === 'source') {
-      return edge.source === nodeId && (edge.sourceHandle === handleId || (!edge.sourceHandle && !handleId));
-    } else {
-      return edge.target === nodeId && (edge.targetHandle === handleId || (!edge.targetHandle && !handleId));
-    }
-  });
-};
-
-// 工具函数：获取Handle的连接数量
-const getHandleConnectionCount = (nodeId: string, handleId: string | undefined, handleType: 'source' | 'target', edges: Edge[]): number => {
-  return edges.filter(edge => {
-    if (handleType === 'source') {
-      return edge.source === nodeId && (edge.sourceHandle === handleId || (!edge.sourceHandle && !handleId));
-    } else {
-      return edge.target === nodeId && (edge.targetHandle === handleId || (!edge.targetHandle && !handleId));
-    }
-  }).length;
-};
-
 // 连接点类型定义
 export enum HandleDataType {
   NUMBER = 'number',    // 数字节点
   BOOLEAN = 'boolean',  // 布尔节点
   EXECUTION = 'execution' // 执行节点
 }
+
+// 智能Handle组件，根据类型自动应用正确的样式
+interface SmartHandleProps {
+  type: 'source' | 'target';
+  position: Position;
+  id?: string;
+  dataType: HandleDataType;
+  isMultiple?: boolean; // true=多连接(方形), false=单连接(圆形)
+  style?: React.CSSProperties;
+}
+
+const SmartHandle: React.FC<SmartHandleProps> = ({ 
+  type, 
+  position, 
+  id, 
+  dataType, 
+  isMultiple = false,
+  style = {}
+}) => {
+  // 根据数据类型确定颜色
+  const getColor = () => {
+    switch (dataType) {
+      case HandleDataType.NUMBER: return '#e53e3e';     // 红色
+      case HandleDataType.BOOLEAN: return '#3182ce';    // 蓝色  
+      case HandleDataType.EXECUTION: return '#38a169';  // 浅绿色
+      default: return '#718096'; // 灰色作为默认
+    }
+  };
+
+  // 根据连接类型确定形状
+  const getShapeClass = () => {
+    return isMultiple ? 'handle-square' : 'handle-circle';
+  };
+
+  // 根据输入/输出类型确定填充
+  const getFillClass = () => {
+    return type === 'source' ? 'handle-filled' : 'handle-hollow';
+  };
+
+  const color = getColor();
+  const shapeClass = getShapeClass();
+  const fillClass = getFillClass();
+
+  return (
+    <Handle
+      type={type}
+      position={position}
+      id={id}
+      className={`${shapeClass} ${fillClass}`}
+      style={{
+        '--handle-color': color,
+        ...style
+      } as React.CSSProperties}
+    />
+  );
+};
 
 // 获取节点Handle的数据类型
 const getHandleDataType = (nodeId: string, handleId: string | undefined, handleType: 'source' | 'target', nodes: Node[]): HandleDataType | null => {
@@ -111,38 +145,12 @@ const areHandleTypesCompatible = (sourceType: HandleDataType | null, targetType:
   return sourceType === targetType;
 };
 
-// 创建带连接状态检测的Handle组件
-interface SmartHandleProps {
-  type: 'source' | 'target';
-  position: Position;
-  className?: string;
-  style?: React.CSSProperties;
-  id?: string;
-  nodeId: string;
-  edges: Edge[];
-}
-
-const SmartHandle: React.FC<SmartHandleProps> = ({ 
-  type, position, className, style, id, nodeId, edges 
-}) => {
-  const isConnected = isHandleConnected(nodeId, id, type, edges);
-  
-  return (
-    <Handle
-      type={type}
-      position={position}
-      className={className}
-      style={style}
-      id={id}
-      data-connected={isConnected}
-    />
-  );
-};
 
 // 节点类型定义
 export interface PsyLangNodeData {
   label: string;
-  nodeType: 'answer' | 'score' | 'math' | 'comparison' | 'logical' | 'output' | 'label' | 'condition' | 'number';
+  // 更新节点类型定义，包含 sum
+  nodeType: 'answer' | 'score' | 'sum' | 'math' | 'comparison' | 'logical' | 'output' | 'label' | 'condition' | 'number';
   config: Record<string, unknown>;
   inputs?: Array<{ id: string; type: string; label: string }>;
   outputs?: Array<{ id: string; type: string; label: string }>;
@@ -164,10 +172,11 @@ const AnswerNode: React.FC<{ data: PsyLangNodeData; id: string }> = ({ data, id 
       <div style={{ fontSize: '12px', color: '#666' }}>
         题目 {data.config.questionId || 1}
       </div>
-      <Handle
+      <SmartHandle
         type="source"
         position={Position.Right}
-        className="square"
+        dataType={HandleDataType.NUMBER}
+        isMultiple={true}
       />
     </div>
   );
@@ -189,10 +198,11 @@ const ScoreNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       <div style={{ fontSize: '12px', color: '#666' }}>
         题目 {data.config.questionId || 1}
       </div>
-      <Handle
+      <SmartHandle
         type="source"
         position={Position.Right}
-        className="square"
+        dataType={HandleDataType.NUMBER}
+        isMultiple={true}
       />
     </div>
   );
@@ -214,10 +224,11 @@ const SumNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       <div style={{ fontSize: '12px', color: '#666' }}>
         总分
       </div>
-      <Handle
+      <SmartHandle
         type="source"
         position={Position.Right}
-        className="square"
+        dataType={HandleDataType.NUMBER}
+        isMultiple={true}
       />
     </div>
   );
@@ -239,10 +250,11 @@ const NumberNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       <div style={{ fontSize: '14px', color: '#333' }}>
         {data.config.value || 0}
       </div>
-      <Handle
+      <SmartHandle
         type="source"
         position={Position.Right}
-        className="square"
+        dataType={HandleDataType.NUMBER}
+        isMultiple={true}
       />
     </div>
   );
@@ -265,27 +277,30 @@ const MathNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
     }}>
       {isMultiInput ? (
         // 多输入：方形端口
-        <Handle
+        <SmartHandle
           type="target"
           position={Position.Left}
           id="multi-input"
-          className="square"
+          dataType={HandleDataType.NUMBER}
+          isMultiple={true}
         />
       ) : (
         // 双输入：两个圆形端口
         <>
-          <Handle
+          <SmartHandle
             type="target"
             position={Position.Left}
             id="input-a"
-            className="circle-small"
+            dataType={HandleDataType.NUMBER}
+            isMultiple={false}
             style={{ top: '30%' }}
           />
-          <Handle
+          <SmartHandle
             type="target"
             position={Position.Left}
             id="input-b"
-            className="circle-small"
+            dataType={HandleDataType.NUMBER}
+            isMultiple={false}
             style={{ top: '70%' }}
           />
         </>
@@ -294,11 +309,12 @@ const MathNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#e65100' }}>
         {operator}
       </div>
-      {/* 多输出：方形端口 */}
-      <Handle
+      {/* 输出端：方形端口 */}
+      <SmartHandle
         type="source"
         position={Position.Right}
-        className="square"
+        dataType={HandleDataType.NUMBER}
+        isMultiple={true}
       />
     </div>
   );
@@ -321,20 +337,22 @@ const AssignNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       justifyContent: 'center'
     }}>
       {/* 执行输入端Handle（上方） */}
-      <Handle
+      <SmartHandle
         type="target"
         position={Position.Top}
         id="execution"
-        className="circle"
+        dataType={HandleDataType.EXECUTION}
+        isMultiple={false}
         style={{ left: '50%' }}
       />
       
       {/* 数值输入端Handle（左侧） */}
-      <Handle
+      <SmartHandle
         type="target"
         position={Position.Left}
         id="value"
-        className="circle"
+        dataType={HandleDataType.NUMBER}
+        isMultiple={false}
         style={{ top: '50%' }}
       />
 
@@ -343,10 +361,11 @@ const AssignNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       </div>
 
       {/* 数值输出端Handle（右侧） */}
-      <Handle
+      <SmartHandle
         type="source"
         position={Position.Right}
-        className="square"
+        dataType={HandleDataType.NUMBER}
+        isMultiple={true}
         style={{ top: '50%' }}
       />
       
@@ -402,10 +421,11 @@ const OutputNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       textAlign: 'center',
       position: 'relative'
     }}>
-      <Handle
+      <SmartHandle
         type="target"
         position={Position.Left}
-        className="circle"
+        dataType={HandleDataType.NUMBER}
+        isMultiple={false}
       />
       <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Output</div>
       <div style={{ fontSize: '12px', color: '#666' }}>
@@ -428,21 +448,23 @@ const LogicalNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       position: 'relative'
     }}>
       {/* 多输入：方形端口 */}
-      <Handle
+      <SmartHandle
         type="target"
         position={Position.Left}
         id="multi-input"
-        className="square"
+        dataType={HandleDataType.BOOLEAN}
+        isMultiple={true}
       />
       <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Logic</div>
       <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#616161' }}>
         {data.config.operator || '&&'}
       </div>
       {/* 多输出：方形端口 */}
-      <Handle
+      <SmartHandle
         type="source"
         position={Position.Right}
-        className="square"
+        dataType={HandleDataType.BOOLEAN}
+        isMultiple={true}
       />
     </div>
   );
@@ -461,18 +483,20 @@ const ComparisonNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       position: 'relative'
     }}>
       {/* 双输入：两个圆形端口 */}
-      <Handle
+      <SmartHandle
         type="target"
         position={Position.Left}
         id="input-a"
-        className="circle-small"
+        dataType={HandleDataType.NUMBER}
+        isMultiple={false}
         style={{ top: '30%' }}
       />
-      <Handle
+      <SmartHandle
         type="target"
         position={Position.Left}
         id="input-b"
-        className="circle-small"
+        dataType={HandleDataType.NUMBER}
+        isMultiple={false}
         style={{ top: '70%' }}
       />
       <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Compare</div>
@@ -480,10 +504,11 @@ const ComparisonNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
         {data.config.operator || '>'}
       </div>
       {/* 多输出：方形端口 */}
-      <Handle
+      <SmartHandle
         type="source"
         position={Position.Right}
-        className="square"
+        dataType={HandleDataType.BOOLEAN}
+        isMultiple={true}
       />
     </div>
   );
@@ -511,18 +536,20 @@ const ConditionNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       {conditionType === 'elseif' ? (
         // ElseIf节点：条件输入和执行输入
         <>
-          <Handle
+          <SmartHandle
             type="target"
             position={Position.Left}
             id="condition"
-            className="circle"
+            dataType={HandleDataType.BOOLEAN}
+            isMultiple={false}
             style={{ top: '25%' }}
           />
-          <Handle
+          <SmartHandle
             type="target"
             position={Position.Left}
             id="execution"
-            className="circle"
+            dataType={HandleDataType.EXECUTION}
+            isMultiple={false}
             style={{ top: '75%' }}
           />
           {/* ElseIf节点的输入标注 */}
@@ -552,11 +579,12 @@ const ConditionNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       ) : (
         // If节点：只有条件输入
         <>
-          <Handle
+          <SmartHandle
             type="target"
             position={Position.Left}
             id="condition"
-            className="circle"
+            dataType={HandleDataType.BOOLEAN}
+            isMultiple={false}
             style={{ top: '50%' }}
           />
           {/* If节点的输入标注 */}
@@ -590,23 +618,21 @@ const ConditionNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       </div>
       
       {/* 输出端Handle - 统一为true和false两个输出 */}
-      <Handle
+      <SmartHandle
         type="source"
         position={Position.Right}
         id="true"
-        className="square"
-        style={{ 
-          top: '30%'
-        }}
+        dataType={HandleDataType.EXECUTION}
+        isMultiple={true}
+        style={{ top: '30%' }}
       />
-      <Handle
+      <SmartHandle
         type="source"
         position={Position.Right}
         id="false"
-        className="square"
-        style={{ 
-          top: '70%'
-        }}
+        dataType={HandleDataType.EXECUTION}
+        isMultiple={true}
+        style={{ top: '70%' }}
       />
       
       {/* 视觉标签 */}
@@ -649,10 +675,11 @@ const LabelNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       position: 'relative'
     }}>
       {/* 单输入：圆形端口 */}
-      <Handle
+      <SmartHandle
         type="target"
         position={Position.Left}
-        className="circle"
+        dataType={HandleDataType.EXECUTION}
+        isMultiple={false}
       />
       <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Label</div>
       <div style={{ fontSize: '12px', color: '#666' }}>
@@ -778,41 +805,6 @@ export default function PsyLangBuilder() {
   const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
   const [nodeIdCounter, setNodeIdCounter] = useState(10);
 
-  // 更新Handle的连接状态
-  useEffect(() => {
-    const updateHandleStates = () => {
-      // 找到所有Handle元素并更新data-connected属性
-      const handleElements = document.querySelectorAll('.react-flow__handle');
-      
-      handleElements.forEach((handleElement) => {
-        const handle = handleElement as HTMLElement;
-        
-        // 从DOM中获取节点ID（需要从父元素获取）
-        let nodeElement = handle.closest('.react-flow__node');
-        if (!nodeElement) return;
-        
-        const nodeId = nodeElement.getAttribute('data-id');
-        if (!nodeId) return;
-        
-        // 获取Handle的类型和ID
-        const isSource = handle.classList.contains('react-flow__handle-source');
-        const isTarget = handle.classList.contains('react-flow__handle-target');
-        const handleType = isSource ? 'source' : 'target';
-        
-        // 从Handle的class中获取ID（ReactFlow会添加特殊class）
-        const handleId = handle.getAttribute('data-handleid');
-        
-        // 检查连接状态
-        const connected = isHandleConnected(nodeId, handleId, handleType, edges);
-        
-        // 设置data属性
-        handle.setAttribute('data-connected', connected.toString());
-      });
-    };
-
-    // 延迟执行以确保DOM已更新
-    setTimeout(updateHandleStates, 100);
-  }, [edges, nodes]);
  
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -897,7 +889,9 @@ export default function PsyLangBuilder() {
       
       // 3. 如果是单连接Handle，检查是否已有连接
       if (isSingleConnection()) {
-        const existingConnections = getHandleConnectionCount(target, targetHandle || undefined, 'target', edges);
+        const existingConnections = edges.filter(edge => 
+          edge.target === target && (edge.targetHandle === targetHandle || (!edge.targetHandle && !targetHandle))
+        ).length;
         if (existingConnections > 0) {
           console.log('单连接Handle已有连接，拒绝新连接');
           return; // 拒绝连接

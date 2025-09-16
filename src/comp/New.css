@@ -1,87 +1,85 @@
-/* ReactFlow Handle 连接状态样式 */
+/* 新的Handle视觉系统 */
 
-/* 默认状态：空心 */
+/* 基础Handle样式重置 */
 .react-flow__handle {
-  background: white !important;
-  border: 2px solid currentColor !important;
+  position: absolute;
+  pointer-events: all;
+  cursor: crosshair;
+  border: none;
+  z-index: 10;
+  transition: transform 0.2s ease;
+  width: 12px;
+  height: 12px;
 }
 
-/* 连接状态：实心 - 使用数据属性来检测 */
-.react-flow__handle[data-connected="true"] {
-  background: currentColor !important;
+/* 圆形Handle - 单连接 */
+.handle-circle {
+  border-radius: 50% !important;
 }
 
-/* 连接过程中的状态 */
-.react-flow__handle.connecting,
-.react-flow__handle.valid {
-  background: currentColor !important;
-}
-
-/* 针对不同节点类型的Handle颜色 */
-.react-flow__node-answer .react-flow__handle {
-  border-color: #01579b;
-  color: #01579b;
-}
-
-.react-flow__node-score .react-flow__handle {
-  border-color: #4a148c;
-  color: #4a148c;
-}
-
-.react-flow__node-number .react-flow__handle {
-  border-color: #3f51b5;
-  color: #3f51b5;
-}
-
-.react-flow__node-math .react-flow__handle {
-  border-color: #e65100;
-  color: #e65100;
-}
-
-.react-flow__node-comparison .react-flow__handle {
-  border-color: #f57c00;
-  color: #f57c00;
-}
-
-.react-flow__node-logical .react-flow__handle {
-  border-color: #616161;
-  color: #616161;
-}
-
-.react-flow__node-output .react-flow__handle {
-  border-color: #2e7d32;
-  color: #2e7d32;
-}
-
-.react-flow__node-label .react-flow__handle {
-  border-color: #c2185b;
-  color: #c2185b;
-}
-
-.react-flow__node-condition .react-flow__handle {
-  border-color: #7b1fa2;
-  color: #7b1fa2;
-}
-
-/* 方形Handle */
-.react-flow__handle.square {
-  width: 16px !important;
-  height: 16px !important;
+/* 方形Handle - 多连接 */
+.handle-square {
   border-radius: 2px !important;
 }
 
-/* 圆形Handle */
-.react-flow__handle.circle {
-  width: 12px !important;
-  height: 12px !important;
-  border-radius: 50% !important;
+/* 实心填充 - 输出端 */
+.handle-filled {
+  background-color: var(--handle-color) !important;
+  border: none !important;
 }
 
-/* 小圆形Handle（用于双输入） */
-.react-flow__handle.circle-small {
-  width: 10px !important;
-  height: 10px !important;
-  border-radius: 50% !important;
+/* 空心填充 - 输入端 */
+.handle-hollow {
+  background-color: white !important;
+  border: 2px solid var(--handle-color) !important;
+  box-sizing: border-box;
+}
+
+/* 悬停效果 */
+.react-flow__handle:hover {
+  transform: scale(1.2);
+}
+
+/* ReactFlow基础位置样式 */
+.react-flow__handle-top {
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.react-flow__handle-right {
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.react-flow__handle-bottom {
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.react-flow__handle-left {
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* 悬停时的位置保持 */
+.react-flow__handle-top:hover {
+  transform: translateX(-50%) scale(1.2);
+}
+
+.react-flow__handle-right:hover {
+  transform: translateY(-50%) scale(1.2);
+}
+
+.react-flow__handle-bottom:hover {
+  transform: translateX(-50%) scale(1.2);
+}
+
+.react-flow__handle-left:hover {
+  transform: translateY(-50%) scale(1.2);
 }
 
 /* Output节点特殊样式 - 移除ReactFlow默认的节点外框 */
