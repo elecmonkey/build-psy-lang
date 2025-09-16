@@ -435,7 +435,7 @@ const OutputNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
   );
 };
 
-// 逻辑运算节点组件 (与或支持多输入)
+// 逻辑运算节点组件 (且或支持多输入)
 const LogicalNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
   return (
     <div style={{

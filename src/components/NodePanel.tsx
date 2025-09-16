@@ -123,7 +123,7 @@ const NodePanel: React.FC<NodePanelProps> = ({ onAddNode }) => {
       nodes: [
         { type: 'math', label: '数学运算', icon: '+', description: '四则运算', color: '#fff3e0', hasInput: true },
         { type: 'comparison', label: '比较运算', icon: '>', description: '大小比较', color: '#fef7e0', hasInput: true },
-        { type: 'logical', label: '逻辑运算', icon: '&', description: '与或运算', color: '#f8f8f8', hasInput: true },
+        { type: 'logical', label: '逻辑运算', icon: '&', description: '且或运算', color: '#f8f8f8', hasInput: true },
       ]
     },
     {
@@ -221,7 +221,7 @@ const NodePanel: React.FC<NodePanelProps> = ({ onAddNode }) => {
       handleAdd = handleAddLogical;
       isSelectInput = true;
       selectOptions = [
-        { value: '&&', label: '&& (与)' },
+        { value: '&&', label: '&& (且)' },
         { value: '||', label: '|| (或)' }
       ];
     }

@@ -172,7 +172,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
                   boxSizing: 'border-box'
                 }}
               >
-                <option value="&&">&& (逻辑与)</option>
+                <option value="&&">&& (逻辑且)</option>
                 <option value="||">|| (逻辑或)</option>
               </select>
             </div>
