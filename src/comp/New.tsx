@@ -992,16 +992,110 @@ export default function PsyLangBuilder() {
   }, [nodeIdCounter]);
 
   const onUpdateNode = useCallback((nodeId: string, newData: Partial<PsyLangNodeData>) => {
-    setNodes(prevNodes => prevNodes.map(node => {
-      if (node.id === nodeId) {
-        return {
-          ...node,
-          data: { ...node.data, ...newData }
-        };
+    setNodes(prevNodes => {
+      const oldNode = prevNodes.find(n => n.id === nodeId);
+      if (!oldNode) return prevNodes;
+      
+      const oldConfig = oldNode.data.config;
+      const newConfig = { ...oldConfig, ...newData.config };
+      const nodeType = oldNode.data.nodeType;
+      
+      // 检查是否需要处理连接线
+      let needsEdgeUpdate = false;
+      let preserveConnections: string[] = []; // 需要保留的连接类型
+      let clearConnections: string[] = []; // 需要清除的连接类型
+      
+      if (nodeType === 'math') {
+        const oldOperator = oldConfig.operator as string;
+        const newOperator = newConfig.operator as string;
+        
+        if (oldOperator !== newOperator) {
+          const oldIsMulti = oldOperator === '+' || oldOperator === '*';
+          const newIsMulti = newOperator === '+' || newOperator === '*';
+          
+          if (oldIsMulti === newIsMulti) {
+            // 同类型切换，动作R（保留所有连接）
+            preserveConnections = ['all'];
+          } else {
+            // 不同类型切换，清除输入端连接，保留输出端
+            clearConnections = ['input'];
+            preserveConnections = ['output'];
+          }
+          needsEdgeUpdate = true;
+        }
+      } else if (nodeType === 'condition') {
+        const oldConditionType = oldConfig.conditionType as string;
+        const newConditionType = newConfig.conditionType as string;
+        
+        if (oldConditionType !== newConditionType) {
+          if ((oldConditionType === 'if' && newConditionType === 'elseif') || 
+              (oldConditionType === 'elseif' && newConditionType === 'if')) {
+            // if ↔ elseif：条件端保留，执行端清除，输出端保留
+            preserveConnections = ['condition', 'output'];
+            clearConnections = ['execution'];
+          }
+          needsEdgeUpdate = true;
+        }
+      } else if (nodeType === 'comparison') {
+        const oldOperator = oldConfig.operator as string;
+        const newOperator = newConfig.operator as string;
+        
+        if (oldOperator !== newOperator) {
+          // 比较运算符一律动作R
+          preserveConnections = ['all'];
+          needsEdgeUpdate = true;
+        }
       }
-      return node;
-    }));
-  }, []);
+      
+      // 更新节点
+      const updatedNodes = prevNodes.map(node => {
+        if (node.id === nodeId) {
+          return {
+            ...node,
+            data: { ...node.data, ...newData }
+          };
+        }
+        return node;
+      });
+      
+      // 如果需要更新连接线，立即处理
+      if (needsEdgeUpdate) {
+        setEdges(prevEdges => {
+          return prevEdges.filter(edge => {
+            const isTargetEdge = edge.target === nodeId;
+            const isSourceEdge = edge.source === nodeId;
+            
+            if (!isTargetEdge && !isSourceEdge) return true;
+            
+            // 保留所有连接
+            if (preserveConnections.includes('all')) return true;
+            
+            // 处理输入端连接
+            if (isTargetEdge) {
+              if (clearConnections.includes('input')) return false;
+              
+              const handleId = edge.targetHandle;
+              if (clearConnections.includes('execution') && handleId === 'execution') return false;
+              if (preserveConnections.includes('condition') && handleId === 'condition') return true;
+              if (preserveConnections.includes('input')) return true;
+              
+              return !clearConnections.includes(handleId || 'default');
+            }
+            
+            // 处理输出端连接
+            if (isSourceEdge) {
+              if (preserveConnections.includes('output') || preserveConnections.includes('all')) return true;
+              return !clearConnections.includes('output');
+            }
+            
+            return true;
+          });
+        });
+      }
+      
+      return updatedNodes;
+    });
+  }, [setEdges]);
 
   // 获取选中的节点
   const selectedNode = useMemo(() => {
