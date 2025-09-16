@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { ReactFlow, applyNodeChanges, applyEdgeChanges, addEdge, Handle, Position } from '@xyflow/react';
 import type { Node, Edge, NodeTypes, NodeChange, EdgeChange, Connection } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -8,11 +8,13 @@ import PropertyPanel from '../components/PropertyPanel';
 import { PsyLangCodeGenerator } from '../utils/codeGenerator';
 
 // 连接点类型定义
-export enum HandleDataType {
-  NUMBER = 'number',    // 数字节点
-  BOOLEAN = 'boolean',  // 布尔节点
-  EXECUTION = 'execution' // 执行节点
-}
+export const HandleDataType = {
+  NUMBER: 'number',    // 数字节点
+  BOOLEAN: 'boolean',  // 布尔节点
+  EXECUTION: 'execution' // 执行节点
+} as const;
+
+export type HandleDataType = typeof HandleDataType[keyof typeof HandleDataType];
 
 // 智能Handle组件，根据类型自动应用正确的样式
 interface SmartHandleProps {
@@ -30,7 +32,7 @@ const SmartHandle: React.FC<SmartHandleProps> = ({
   id, 
   dataType, 
   isMultiple = false,
-  style = {}
+  style = undefined
 }) => {
   // 根据数据类型确定颜色
   const getColor = () => {
@@ -717,7 +719,7 @@ const initialNodes: Node[] = [
     data: { 
       label: 'Sum', 
       nodeType: 'sum', 
-      config: {} 
+      config: undefined 
     },
   },
   {
@@ -748,7 +750,7 @@ const initialNodes: Node[] = [
     data: { 
       label: 'Sum', 
       nodeType: 'sum', 
-      config: {} 
+      config: undefined 
     },
   },
   {
@@ -758,7 +760,7 @@ const initialNodes: Node[] = [
     data: { 
       label: 'Sum', 
       nodeType: 'sum', 
-      config: {} 
+      config: undefined 
     },
   },
   
@@ -1158,7 +1160,7 @@ export default function PsyLangBuilder() {
     };
 
     // 使用自定义配置或默认配置
-    const finalConfig = customConfig || nodeConfigs[nodeType as keyof typeof nodeConfigs] || {};
+    const finalConfig = customConfig || nodeConfigs[nodeType as keyof typeof nodeConfigs] || undefined;
     
     // 将 if/elseif 映射到 condition 节点类型
     const actualNodeType = (nodeType === 'if' || nodeType === 'elseif') ? 'condition' : nodeType;
