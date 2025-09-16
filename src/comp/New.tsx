@@ -374,15 +374,25 @@ const ComparisonNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
 const ConditionNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
   const conditionType = (data.config.conditionType as string) || 'if';
   
+  // 根据节点类型调整高度
+  const getNodeHeight = () => {
+    if (conditionType === 'else') return '80px';  // Else节点只有一个输出，稍小
+    return '100px';  // If和ElseIf节点有两个输出，需要更高
+  };
+  
   return (
     <div style={{
       background: '#f3e5f5',
       border: '2px solid #7b1fa2',
       borderRadius: '8px',
-      padding: '10px',
+      padding: '15px 10px',  // 增加上下padding
       minWidth: '120px',
+      height: getNodeHeight(),  // 动态设置高度
       textAlign: 'center',
-      position: 'relative'
+      position: 'relative',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center'  // 垂直居中内容
     }}>
       {/* 输入端Handle - 根据类型不同而不同 */}
       {conditionType === 'else' ? (
@@ -401,14 +411,14 @@ const ConditionNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
             position={Position.Left}
             id="condition"
             className="circle"
-            style={{ top: '30%' }}
+            style={{ top: '25%' }}  // 调整位置避免重叠
           />
           <Handle
             type="target"
             position={Position.Left}
             id="execution"
             className="circle"
-            style={{ top: '70%' }}
+            style={{ top: '75%' }}  // 调整位置避免重叠
           />
         </>
       ) : (
@@ -421,11 +431,19 @@ const ConditionNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
         />
       )}
       
-      <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+      <div style={{ 
+        fontWeight: 'bold', 
+        marginBottom: '5px',
+        fontSize: '14px'
+      }}>
         {conditionType === 'if' ? 'If' : 
          conditionType === 'elseif' ? 'Else If' : 'Else'}
       </div>
-      <div style={{ fontSize: '12px', color: '#666' }}>
+      <div style={{ 
+        fontSize: '11px', 
+        color: '#666',
+        opacity: 0.8
+      }}>
         {conditionType}
       </div>
       
@@ -446,15 +464,45 @@ const ConditionNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
             position={Position.Right}
             id="true"
             className="square"
-            style={{ top: '40%' }}
+            style={{ 
+              top: '30%',  // 调整位置，给更多空间
+              transform: 'translateY(-50%)'
+            }}
           />
           <Handle
             type="source"
             position={Position.Right}
             id="false"
             className="square"
-            style={{ top: '60%' }}
+            style={{ 
+              top: '70%',  // 调整位置，给更多空间
+              transform: 'translateY(-50%)'
+            }}
           />
+          
+          {/* 添加视觉标签 */}
+          <div style={{
+            position: 'absolute',
+            right: '20px',
+            top: '25%',
+            fontSize: '9px',
+            color: '#7b1fa2',
+            fontWeight: 'bold',
+            transform: 'translateY(-50%)'
+          }}>
+            T
+          </div>
+          <div style={{
+            position: 'absolute',
+            right: '20px',
+            top: '75%',
+            fontSize: '9px',
+            color: '#7b1fa2',
+            fontWeight: 'bold',
+            transform: 'translateY(-50%)'
+          }}>
+            F
+          </div>
         </>
       )}
     </div>
