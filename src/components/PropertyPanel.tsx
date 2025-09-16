@@ -1,5 +1,5 @@
 import React from 'react';
-import { PsyLangNodeData } from '../comp/New';
+import type { PsyLangNodeData } from '../comp/New';
 
 interface PropertyPanelProps {
   selectedNode: { id: string; data: PsyLangNodeData } | null;
