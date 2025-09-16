@@ -137,6 +137,7 @@ const NodePanel: React.FC<NodePanelProps> = ({ onAddNode }) => {
       nodes: [
         { type: 'if', label: 'If', icon: 'IF', description: '如果条件', color: '#f3e5f5' },
         { type: 'elseif', label: 'Else If', icon: 'EI', description: '否则如果', color: '#f3e5f5' },
+        { type: 'assign', label: 'Assign', icon: '=', description: '赋值操作', color: '#fff3e0' },
       ]
     }
   ];

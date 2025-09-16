@@ -154,6 +154,12 @@ export class PsyLangCodeGenerator {
         const operator = data.config.operator || '&&';
         return `(${expressions.join(` ${operator} `)})`;
       }
+      
+      case 'assign': {
+        // 赋值节点返回其输入的表达式
+        const valueInput = this.getConnectedNode(nodeId, 'value');
+        return valueInput ? this.generateExpression(valueInput, new Set(visited)) : '0';
+      }
         
       default:
         return `[未知表达式:${data.nodeType}]`;
@@ -215,6 +221,16 @@ export class PsyLangCodeGenerator {
           const value = data.config.value || 'Unknown';
           const labelId = data.config.labelId || 0;
           statements.push(`${indent}Label[${labelId}] = "${value}";`);
+          break;
+        }
+        case 'assign': {
+          // 赋值节点：将输入值赋给指定的Output
+          const valueInput = this.getConnectedNode(nodeId, 'value');
+          if (valueInput) {
+            const expression = this.generateExpression(valueInput);
+            const targetOutput = data.config.targetOutput || 1;
+            statements.push(`${indent}Output[${targetOutput}] = ${expression};`);
+          }
           break;
         }
       }

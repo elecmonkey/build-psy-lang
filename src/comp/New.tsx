@@ -57,6 +57,8 @@ const getHandleDataType = (nodeId: string, handleId: string | undefined, handleT
         return HandleDataType.BOOLEAN;
       case 'condition':
         return HandleDataType.EXECUTION;
+      case 'assign':
+        return HandleDataType.NUMBER;
       default:
         return null;
     }
@@ -86,6 +88,14 @@ const getHandleDataType = (nodeId: string, handleId: string | undefined, handleT
         return HandleDataType.BOOLEAN;
       case 'output':
         return HandleDataType.NUMBER;
+      case 'assign':
+        // 赋值节点有两个输入端：数值输入(value)和执行流输入(execution)
+        if (handleId === 'value') {
+          return HandleDataType.NUMBER;
+        } else if (handleId === 'execution') {
+          return HandleDataType.EXECUTION;
+        }
+        return null;
       case 'label':
         return HandleDataType.EXECUTION;
       default:
@@ -263,6 +273,55 @@ const MathNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
         type="source"
         position={Position.Right}
         className="square"
+      />
+    </div>
+  );
+};
+
+// Assign 赋值节点组件
+const AssignNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
+  return (
+    <div style={{
+      background: '#fff3e0',
+      border: '2px solid #f57c00',
+      borderRadius: '8px',
+      padding: '15px 10px',
+      minWidth: '120px',
+      height: '80px',
+      textAlign: 'center',
+      position: 'relative',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center'
+    }}>
+      {/* 执行输入端Handle（上方） */}
+      <Handle
+        type="target"
+        position={Position.Top}
+        id="execution"
+        className="circle"
+        style={{ left: '50%' }}
+      />
+      
+      {/* 数值输入端Handle（左侧） */}
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="value"
+        className="circle"
+        style={{ top: '50%' }}
+      />
+
+      <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#f57c00' }}>
+        赋值
+      </div>
+
+      {/* 数值输出端Handle（右侧） */}
+      <Handle
+        type="source"
+        position={Position.Right}
+        className="square"
+        style={{ top: '50%' }}
       />
     </div>
   );
@@ -518,6 +577,7 @@ const nodeTypes: NodeTypes = {
   output: OutputNode,
   label: LabelNode,
   condition: ConditionNode,
+  assign: AssignNode,
 };
 
 // 初始节点和边
@@ -711,6 +771,12 @@ export default function PsyLangBuilder() {
           return true;
         }
         
+        // Assign节点的连接限制
+        if (nodeType === 'assign') {
+          // 所有assign节点的输入都是单连接
+          return true;
+        }
+        
         // 数学节点的双输入Handle是单连接
         if (nodeType === 'math') {
           const operator = (targetNode.data.config as any).operator as string;
@@ -760,7 +826,8 @@ export default function PsyLangBuilder() {
       label: { labelId: 1, value: 'High' },
       condition: { conditionType: 'if' },
       if: { conditionType: 'if' },
-      elseif: { conditionType: 'elseif' }
+      elseif: { conditionType: 'elseif' },
+      assign: { targetOutput: 1 }
     };
 
     // 使用自定义配置或默认配置

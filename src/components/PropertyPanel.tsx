@@ -245,6 +245,30 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
             </div>
           </div>
         );
+      
+      case 'assign':
+        return (
+          <div>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '13px', fontWeight: '500' }}>
+                目标输出编号
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={data.config.targetOutput || 1}
+                onChange={(e) => updateConfig('targetOutput', parseInt(e.target.value) || 1)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '14px'
+                }}
+              />
+            </div>
+          </div>
+        );
 
       case 'number':
         return (
@@ -285,7 +309,8 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
       'logical': '逻辑运算节点',
       'output': 'Output 输出节点',
       'label': 'Label 标签节点',
-      'condition': '条件判断节点'
+      'condition': '条件判断节点',
+      'assign': '赋值操作节点'
     };
     return typeMap[nodeType] || nodeType;
   };
