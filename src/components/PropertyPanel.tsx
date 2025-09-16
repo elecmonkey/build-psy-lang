@@ -109,7 +109,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
                   background: 'white'
                 }}
               >
-                <option value="+">\u002B (加法)</option>
+                <option value="+">+ (加法)</option>
                 <option value="-">- (减法)</option>
                 <option value="*">× (乘法)</option>
                 <option value="/">÷ (除法)</option>
