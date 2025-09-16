@@ -6,7 +6,12 @@
   border: 2px solid currentColor !important;
 }
 
-/* 连接状态：实心 */
+/* 连接状态：实心 - 使用数据属性来检测 */
+.react-flow__handle[data-connected="true"] {
+  background: currentColor !important;
+}
+
+/* 连接过程中的状态 */
 .react-flow__handle.connecting,
 .react-flow__handle.valid {
   background: currentColor !important;

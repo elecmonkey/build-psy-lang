@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { ReactFlow, applyNodeChanges, applyEdgeChanges, addEdge, Handle, Position } from '@xyflow/react';
 import type { Node, Edge, NodeTypes, NodeChange, EdgeChange, Connection } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -6,6 +6,56 @@ import './New.css';
 import NodePanel from '../components/NodePanel';
 import PropertyPanel from '../components/PropertyPanel';
 import { PsyLangCodeGenerator } from '../utils/codeGenerator';
+
+// 工具函数：检查Handle是否已连接
+const isHandleConnected = (nodeId: string, handleId: string | undefined, handleType: 'source' | 'target', edges: Edge[]): boolean => {
+  return edges.some(edge => {
+    if (handleType === 'source') {
+      return edge.source === nodeId && (edge.sourceHandle === handleId || (!edge.sourceHandle && !handleId));
+    } else {
+      return edge.target === nodeId && (edge.targetHandle === handleId || (!edge.targetHandle && !handleId));
+    }
+  });
+};
+
+// 工具函数：获取Handle的连接数量
+const getHandleConnectionCount = (nodeId: string, handleId: string | undefined, handleType: 'source' | 'target', edges: Edge[]): number => {
+  return edges.filter(edge => {
+    if (handleType === 'source') {
+      return edge.source === nodeId && (edge.sourceHandle === handleId || (!edge.sourceHandle && !handleId));
+    } else {
+      return edge.target === nodeId && (edge.targetHandle === handleId || (!edge.targetHandle && !handleId));
+    }
+  }).length;
+};
+
+// 创建带连接状态检测的Handle组件
+interface SmartHandleProps {
+  type: 'source' | 'target';
+  position: Position;
+  className?: string;
+  style?: React.CSSProperties;
+  id?: string;
+  nodeId: string;
+  edges: Edge[];
+}
+
+const SmartHandle: React.FC<SmartHandleProps> = ({ 
+  type, position, className, style, id, nodeId, edges 
+}) => {
+  const isConnected = isHandleConnected(nodeId, id, type, edges);
+  
+  return (
+    <Handle
+      type={type}
+      position={position}
+      className={className}
+      style={style}
+      id={id}
+      data-connected={isConnected}
+    />
+  );
+};
 
 // 节点类型定义
 export interface PsyLangNodeData {
@@ -17,7 +67,7 @@ export interface PsyLangNodeData {
 }
 
 // Answer 输入节点组件
-const AnswerNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
+const AnswerNode: React.FC<{ data: PsyLangNodeData; id: string }> = ({ data, id }) => {
   return (
     <div style={{
       background: '#e1f5fe',
@@ -426,6 +476,42 @@ export default function PsyLangBuilder() {
   const [edges, setEdges] = useState(initialEdges);
   const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
   const [nodeIdCounter, setNodeIdCounter] = useState(10);
+
+  // 更新Handle的连接状态
+  useEffect(() => {
+    const updateHandleStates = () => {
+      // 找到所有Handle元素并更新data-connected属性
+      const handleElements = document.querySelectorAll('.react-flow__handle');
+      
+      handleElements.forEach((handleElement) => {
+        const handle = handleElement as HTMLElement;
+        
+        // 从DOM中获取节点ID（需要从父元素获取）
+        let nodeElement = handle.closest('.react-flow__node');
+        if (!nodeElement) return;
+        
+        const nodeId = nodeElement.getAttribute('data-id');
+        if (!nodeId) return;
+        
+        // 获取Handle的类型和ID
+        const isSource = handle.classList.contains('react-flow__handle-source');
+        const isTarget = handle.classList.contains('react-flow__handle-target');
+        const handleType = isSource ? 'source' : 'target';
+        
+        // 从Handle的class中获取ID（ReactFlow会添加特殊class）
+        const handleId = handle.getAttribute('data-handleid');
+        
+        // 检查连接状态
+        const connected = isHandleConnected(nodeId, handleId, handleType, edges);
+        
+        // 设置data属性
+        handle.setAttribute('data-connected', connected.toString());
+      });
+    };
+
+    // 延迟执行以确保DOM已更新
+    setTimeout(updateHandleStates, 100);
+  }, [edges, nodes]);
  
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -449,8 +535,56 @@ export default function PsyLangBuilder() {
   );
   
   const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    [],
+    (params: Connection) => {
+      // 检查连接限制
+      const { source, target, sourceHandle, targetHandle } = params;
+      
+      if (!source || !target) return;
+      
+      // 获取目标节点信息
+      const targetNode = nodes.find(n => n.id === target);
+      if (!targetNode) return;
+      
+      // 检查目标Handle是否为单连接类型
+      const isSingleConnection = () => {
+        const nodeType = targetNode.data.nodeType;
+        
+        // 单连接的节点类型和Handle
+        if (nodeType === 'output' || nodeType === 'label' || nodeType === 'condition') {
+          return true;
+        }
+        
+        // 数学节点的双输入Handle是单连接
+        if (nodeType === 'math') {
+          const operator = targetNode.data.config.operator as string;
+          if ((operator === '-' || operator === '/') && 
+              (targetHandle === 'input-a' || targetHandle === 'input-b')) {
+            return true;
+          }
+        }
+        
+        // 比较节点的双输入Handle是单连接
+        if (nodeType === 'comparison' && 
+            (targetHandle === 'input-a' || targetHandle === 'input-b')) {
+          return true;
+        }
+        
+        return false;
+      };
+      
+      // 如果是单连接Handle，检查是否已有连接
+      if (isSingleConnection()) {
+        const existingConnections = getHandleConnectionCount(target, targetHandle, 'target', edges);
+        if (existingConnections > 0) {
+          console.log('单连接Handle已有连接，拒绝新连接');
+          return; // 拒绝连接
+        }
+      }
+      
+      // 允许连接
+      setEdges((eds) => addEdge(params, eds));
+    },
+    [nodes, edges],
   );
 
   const onAddNode = useCallback((nodeType: string, customConfig?: Record<string, unknown>) => {
