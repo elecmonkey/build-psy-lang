@@ -1039,6 +1039,15 @@ export default function PsyLangBuilder() {
           preserveConnections = ['all'];
           needsEdgeUpdate = true;
         }
+      } else if (nodeType === 'logical') {
+        const oldOperator = oldConfig.operator as string;
+        const newOperator = newConfig.operator as string;
+        
+        if (oldOperator !== newOperator) {
+          // 逻辑运算符一律动作R（保留所有连接）
+          preserveConnections = ['all'];
+          needsEdgeUpdate = true;
+        }
       }
       
       // 更新节点

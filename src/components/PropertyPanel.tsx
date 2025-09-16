@@ -55,11 +55,12 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
                 value={data.config.questionId || 1}
                 onChange={(e) => updateConfig('questionId', parseInt(e.target.value) || 1)}
                 style={{
-                  width: '100%',
+                  width: 'calc(100% - 4px)',
                   padding: '8px 12px',
                   border: '1px solid #ddd',
                   borderRadius: '4px',
-                  fontSize: '14px'
+                  fontSize: '14px',
+                  boxSizing: 'border-box'
                 }}
               />
             </div>
@@ -79,11 +80,12 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
                 value={data.config.questionId || 1}
                 onChange={(e) => updateConfig('questionId', parseInt(e.target.value) || 1)}
                 style={{
-                  width: '100%',
+                  width: 'calc(100% - 4px)',
                   padding: '8px 12px',
                   border: '1px solid #ddd',
                   borderRadius: '4px',
-                  fontSize: '14px'
+                  fontSize: '14px',
+                  boxSizing: 'border-box'
                 }}
               />
             </div>
@@ -101,12 +103,13 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
                 value={data.config.operator || '+'}
                 onChange={(e) => updateConfig('operator', e.target.value)}
                 style={{
-                  width: '100%',
+                  width: 'calc(100% - 4px)',
                   padding: '8px 12px',
                   border: '1px solid #ddd',
                   borderRadius: '4px',
                   fontSize: '14px',
-                  background: 'white'
+                  background: 'white',
+                  boxSizing: 'border-box'
                 }}
               >
                 <option value="+">+ (加法)</option>
@@ -129,12 +132,13 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
                 value={data.config.operator || '>'}
                 onChange={(e) => updateConfig('operator', e.target.value)}
                 style={{
-                  width: '100%',
+                  width: 'calc(100% - 4px)',
                   padding: '8px 12px',
                   border: '1px solid #ddd',
                   borderRadius: '4px',
                   fontSize: '14px',
-                  background: 'white'
+                  background: 'white',
+                  boxSizing: 'border-box'
                 }}
               >
                 <option value=">">&gt; (大于)</option>
@@ -143,6 +147,33 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
                 <option value="<=">&lt;= (小于等于)</option>
                 <option value="==">== (等于)</option>
                 <option value="!=">!= (不等于)</option>
+              </select>
+            </div>
+          </div>
+        );
+
+      case 'logical':
+        return (
+          <div>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '13px', fontWeight: '500' }}>
+                逻辑运算符
+              </label>
+              <select
+                value={data.config.operator || '&&'}
+                onChange={(e) => updateConfig('operator', e.target.value)}
+                style={{
+                  width: 'calc(100% - 4px)',
+                  padding: '8px 12px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  background: 'white',
+                  boxSizing: 'border-box'
+                }}
+              >
+                <option value="&&">&& (逻辑与)</option>
+                <option value="||">|| (逻辑或)</option>
               </select>
             </div>
           </div>
@@ -161,11 +192,12 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
                 value={data.config.outputId || 0}
                 onChange={(e) => updateConfig('outputId', parseInt(e.target.value) || 0)}
                 style={{
-                  width: '100%',
+                  width: 'calc(100% - 4px)',
                   padding: '8px 12px',
                   border: '1px solid #ddd',
                   borderRadius: '4px',
-                  fontSize: '14px'
+                  fontSize: '14px',
+                  boxSizing: 'border-box'
                 }}
               />
               <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
@@ -188,11 +220,12 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
                 value={data.config.labelId || 0}
                 onChange={(e) => updateConfig('labelId', parseInt(e.target.value) || 0)}
                 style={{
-                  width: '100%',
+                  width: 'calc(100% - 4px)',
                   padding: '8px 12px',
                   border: '1px solid #ddd',
                   borderRadius: '4px',
-                  fontSize: '14px'
+                  fontSize: '14px',
+                  boxSizing: 'border-box'
                 }}
               />
               <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
@@ -209,11 +242,12 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
                 onChange={(e) => updateConfig('value', e.target.value)}
                 placeholder="High, Medium, Low..."
                 style={{
-                  width: '100%',
+                  width: 'calc(100% - 4px)',
                   padding: '8px 12px',
                   border: '1px solid #ddd',
                   borderRadius: '4px',
-                  fontSize: '14px'
+                  fontSize: '14px',
+                  boxSizing: 'border-box'
                 }}
               />
             </div>
@@ -231,12 +265,13 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
                 value={data.config.conditionType || 'if'}
                 onChange={(e) => updateConfig('conditionType', e.target.value)}
                 style={{
-                  width: '100%',
+                  width: 'calc(100% - 4px)',
                   padding: '8px 12px',
                   border: '1px solid #ddd',
                   borderRadius: '4px',
                   fontSize: '14px',
-                  background: 'white'
+                  background: 'white',
+                  boxSizing: 'border-box'
                 }}
               >
                 <option value="if">If (如果)</option>
@@ -259,11 +294,12 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
                 value={data.config.targetOutput || 1}
                 onChange={(e) => updateConfig('targetOutput', parseInt(e.target.value) || 1)}
                 style={{
-                  width: '100%',
+                  width: 'calc(100% - 4px)',
                   padding: '8px 12px',
                   border: '1px solid #ddd',
                   borderRadius: '4px',
-                  fontSize: '14px'
+                  fontSize: '14px',
+                  boxSizing: 'border-box'
                 }}
               />
             </div>
@@ -283,11 +319,12 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
                 value={data.config.value || 0}
                 onChange={(e) => updateConfig('value', parseFloat(e.target.value) || 0)}
                 style={{
-                  width: '100%',
+                  width: 'calc(100% - 4px)',
                   padding: '8px 12px',
                   border: '1px solid #ddd',
                   borderRadius: '4px',
-                  fontSize: '14px'
+                  fontSize: '14px',
+                  boxSizing: 'border-box'
                 }}
               />
             </div>
