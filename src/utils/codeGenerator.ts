@@ -99,6 +99,9 @@ export class PsyLangCodeGenerator {
         
       case 'score':
         return `Score[${data.config.questionId || 1}]`;
+
+      case 'number':
+        return `${data.config.value || 0}`;
         
       case 'math': {
         const dependencies = Array.from(this.dependencyGraph.get(nodeId) || []);
@@ -107,23 +110,35 @@ export class PsyLangCodeGenerator {
         } else if (dependencies.length === 1) {
           return this.generateExpression(dependencies[0], new Set(visited));
         } else {
-          const left = this.generateExpression(dependencies[0], new Set(visited));
-          const right = this.generateExpression(dependencies[1], new Set(visited));
           const operator = data.config.operator || '+';
           
-          // 处理除法显示
-          const displayOperator = operator === '/' ? '/' : operator;
-          return `(${left} ${displayOperator} ${right})`;
+          if (operator === '+' || operator === '*') {
+            // 多输入运算符
+            const expressions = dependencies.map(dep => 
+              this.generateExpression(dep, new Set(visited))
+            );
+            return expressions.length > 1 ? 
+              `(${expressions.join(` ${operator} `)})` : 
+              expressions[0] || '0';
+          } else {
+            // 双输入运算符 (-, /)
+            const inputA = this.getConnectedNode(nodeId, 'input-a');
+            const inputB = this.getConnectedNode(nodeId, 'input-b');
+            
+            const left = inputA ? this.generateExpression(inputA, new Set(visited)) : '0';
+            const right = inputB ? this.generateExpression(inputB, new Set(visited)) : '0';
+            
+            return `(${left} ${operator} ${right})`;
+          }
         }
       }
         
       case 'comparison': {
-        const dependencies = Array.from(this.dependencyGraph.get(nodeId) || []);
-        if (dependencies.length < 2) {
-          return 'true';
-        }
-        const left = this.generateExpression(dependencies[0], new Set(visited));
-        const right = this.generateExpression(dependencies[1], new Set(visited));
+        const inputA = this.getConnectedNode(nodeId, 'input-a');
+        const inputB = this.getConnectedNode(nodeId, 'input-b');
+        
+        const left = inputA ? this.generateExpression(inputA, new Set(visited)) : '0';
+        const right = inputB ? this.generateExpression(inputB, new Set(visited)) : '0';
         const operator = data.config.operator || '>';
         return `(${left} ${operator} ${right})`;
       }
@@ -133,15 +148,24 @@ export class PsyLangCodeGenerator {
         if (dependencies.length < 2) {
           return 'true';
         }
-        const left = this.generateExpression(dependencies[0], new Set(visited));
-        const right = this.generateExpression(dependencies[1], new Set(visited));
+        const expressions = dependencies.map(dep => 
+          this.generateExpression(dep, new Set(visited))
+        );
         const operator = data.config.operator || '&&';
-        return `(${left} ${operator} ${right})`;
+        return `(${expressions.join(` ${operator} `)})`;
       }
         
       default:
         return `[未知表达式:${data.nodeType}]`;
     }
+  }
+
+  // 辅助方法：根据Handle ID获取连接的节点
+  private getConnectedNode(nodeId: string, handleId?: string): string | null {
+    const edge = this.edges.find(e => 
+      e.target === nodeId && (e.targetHandle === handleId || (!e.targetHandle && !handleId))
+    );
+    return edge ? edge.source : null;
   }
 
   private generateAssignments(): string[] {
@@ -161,41 +185,196 @@ export class PsyLangCodeGenerator {
     return assignments;
   }
 
+  // 获取从指定Handle连接的节点
+  private getConnectedNodesFromHandle(nodeId: string, handleId?: string): string[] {
+    return this.edges
+      .filter(e => e.source === nodeId && (e.sourceHandle === handleId || (!e.sourceHandle && !handleId)))
+      .map(e => e.target);
+  }
+
+  // 生成分支中的语句
+  private generateBranchStatements(nodeIds: string[], indent: string = '    '): string[] {
+    const statements: string[] = [];
+    
+    nodeIds.forEach(nodeId => {
+      const node = this.getNodeById(nodeId);
+      if (!node) return;
+      
+      const data = node.data as PsyLangNodeData;
+      
+      switch (data.nodeType) {
+        case 'output': {
+          const dependencies = Array.from(this.dependencyGraph.get(nodeId) || []);
+          if (dependencies.length > 0) {
+            const expression = this.generateExpression(dependencies[0]);
+            statements.push(`${indent}Output[${data.config.outputId || 0}] = ${expression};`);
+          }
+          break;
+        }
+        case 'label': {
+          const value = data.config.value || 'Unknown';
+          const labelId = data.config.labelId || 0;
+          statements.push(`${indent}Label[${labelId}] = "${value}";`);
+          break;
+        }
+      }
+    });
+    
+    return statements;
+  }
+
+  // 递归生成条件链
+  private generateConditionChain(nodeId: string, indent: string = ''): string[] {
+    const node = this.getNodeById(nodeId);
+    if (!node) return [];
+    
+    const data = node.data as PsyLangNodeData;
+    if (data.nodeType !== 'condition') return [];
+    
+    const conditionType = (data.config.conditionType as string) || 'if';
+    const lines: string[] = [];
+    
+    if (conditionType === 'if') {
+      // If节点：需要条件表达式
+      const conditionNode = this.getConnectedNode(nodeId, 'condition');
+      const conditionExpr = conditionNode ? this.generateExpression(conditionNode) : 'true';
+      
+      lines.push(`${indent}if (${conditionExpr}) {`);
+      
+      // 生成true分支的语句
+      const trueBranch = this.getConnectedNodesFromHandle(nodeId, 'true');
+      const trueStatements = this.generateBranchStatements(trueBranch, indent + '    ');
+      lines.push(...trueStatements);
+      
+      // 检查false分支是否连接到elseif或else
+      const falseBranch = this.getConnectedNodesFromHandle(nodeId, 'false');
+      if (falseBranch.length > 0) {
+        const nextCondition = falseBranch.find(nodeId => {
+          const nextNode = this.getNodeById(nodeId);
+          return nextNode && (nextNode.data as PsyLangNodeData).nodeType === 'condition';
+        });
+        
+        if (nextCondition) {
+          // 有后续条件节点，递归生成
+          lines.push(`${indent}} else `);
+          const nextLines = this.generateConditionChain(nextCondition, indent);
+          // 移除第一行的缩进，因为我们已经加了"} else "
+          if (nextLines.length > 0) {
+            nextLines[0] = nextLines[0].trim();
+            lines.push(...nextLines);
+          }
+        } else {
+          // false分支直接连接到output/label节点
+          const falseStatements = this.generateBranchStatements(falseBranch, indent + '    ');
+          if (falseStatements.length > 0) {
+            lines.push(`${indent}} else {`);
+            lines.push(...falseStatements);
+            lines.push(`${indent}}`);
+          } else {
+            lines.push(`${indent}}`);
+          }
+        }
+      } else {
+        lines.push(`${indent}}`);
+      }
+      
+    } else if (conditionType === 'elseif') {
+      // ElseIf节点：需要条件表达式
+      const conditionNode = this.getConnectedNode(nodeId, 'condition');
+      const conditionExpr = conditionNode ? this.generateExpression(conditionNode) : 'true';
+      
+      lines.push(`if (${conditionExpr}) {`);
+      
+      // 生成true分支的语句
+      const trueBranch = this.getConnectedNodesFromHandle(nodeId, 'true');
+      const trueStatements = this.generateBranchStatements(trueBranch, indent + '    ');
+      lines.push(...trueStatements);
+      
+      // 检查false分支
+      const falseBranch = this.getConnectedNodesFromHandle(nodeId, 'false');
+      if (falseBranch.length > 0) {
+        const nextCondition = falseBranch.find(nodeId => {
+          const nextNode = this.getNodeById(nodeId);
+          return nextNode && (nextNode.data as PsyLangNodeData).nodeType === 'condition';
+        });
+        
+        if (nextCondition) {
+          lines.push(`${indent}} else `);
+          const nextLines = this.generateConditionChain(nextCondition, indent);
+          if (nextLines.length > 0) {
+            nextLines[0] = nextLines[0].trim();
+            lines.push(...nextLines);
+          }
+        } else {
+          const falseStatements = this.generateBranchStatements(falseBranch, indent + '    ');
+          if (falseStatements.length > 0) {
+            lines.push(`${indent}} else {`);
+            lines.push(...falseStatements);
+            lines.push(`${indent}}`);
+          } else {
+            lines.push(`${indent}}`);
+          }
+        }
+      } else {
+        lines.push(`${indent}}`);
+      }
+      
+    } else if (conditionType === 'else') {
+      // Else节点：无条件执行
+      lines.push(`{`);
+      
+      // 生成else分支的语句
+      const outputBranch = this.getConnectedNodesFromHandle(nodeId, 'output');
+      const statements = this.generateBranchStatements(outputBranch, indent + '    ');
+      lines.push(...statements);
+      lines.push(`${indent}}`);
+    }
+    
+    return lines;
+  }
+
   private generateConditions(): string[] {
     const conditions: string[] = [];
-    const conditionNodes = this.nodes.filter(n => (n.data as PsyLangNodeData).nodeType === 'condition');
     
-    // 简化处理：为每个label节点生成基本条件
-    const labelNodes = this.nodes.filter(n => (n.data as PsyLangNodeData).nodeType === 'label');
+    // 找到所有的if节点（条件链的起始点）
+    const ifNodes = this.nodes.filter(n => {
+      const data = n.data as PsyLangNodeData;
+      return data.nodeType === 'condition' && 
+             (data.config.conditionType as string) === 'if';
+    });
     
+    // 为每个if节点生成条件链
+    ifNodes.forEach(node => {
+      const conditionLines = this.generateConditionChain(node.id);
+      if (conditionLines.length > 0) {
+        conditions.push(...conditionLines);
+        conditions.push(''); // 添加空行分隔不同的条件组
+      }
+    });
+    
+    // 处理没有连接到条件链的独立Label节点
+    const labelNodes = this.nodes.filter(n => {
+      const data = n.data as PsyLangNodeData;
+      if (data.nodeType !== 'label') return false;
+      
+      // 检查是否连接到条件节点
+      const hasConditionInput = this.edges.some(edge => {
+        const sourceNode = this.getNodeById(edge.source);
+        return edge.target === n.id && sourceNode && 
+               (sourceNode.data as PsyLangNodeData).nodeType === 'condition';
+      });
+      
+      return !hasConditionInput;
+    });
+    
+    // 为独立的Label节点生成简单赋值语句
     labelNodes.forEach(node => {
       const data = node.data as PsyLangNodeData;
       const labelId = data.config.labelId || 0;
       const value = data.config.value || 'Unknown';
-      
-      // 查找对应的Output节点
-      const outputNode = this.nodes.find(n => {
-        const outputData = n.data as PsyLangNodeData;
-        return outputData.nodeType === 'output' && outputData.config.outputId === labelId;
-      });
-
-      if (outputNode) {
-        // 生成简单的条件判断
-        conditions.push(
-          `if (Output[${labelId}] >= 15) {`,
-          `    Label[${labelId}] = "High"`,
-          `} else if (Output[${labelId}] >= 10) {`,
-          `    Label[${labelId}] = "Medium"`, 
-          `} else {`,
-          `    Label[${labelId}] = "Low"`,
-          `}`
-        );
-      } else {
-        // 直接赋值
-        conditions.push(`Label[${labelId}] = "${value}"`);
-      }
+      conditions.push(`Label[${labelId}] = "${value}";`);
     });
-
+    
     return conditions;
   }
 
