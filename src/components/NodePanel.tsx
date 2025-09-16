@@ -135,7 +135,9 @@ const NodePanel: React.FC<NodePanelProps> = ({ onAddNode }) => {
       title: '控制节点',
       color: '#9C27B0',
       nodes: [
-        { type: 'condition', label: '条件判断', icon: '?', description: 'if/else', color: '#f3e5f5' },
+        { type: 'if', label: 'If', icon: 'IF', description: '如果条件', color: '#f3e5f5' },
+        { type: 'elseif', label: 'Else If', icon: 'EI', description: '否则如果', color: '#f3e5f5' },
+        { type: 'else', label: 'Else', icon: 'EL', description: '否则', color: '#f3e5f5' },
       ]
     }
   ];
@@ -427,7 +429,7 @@ const NodePanel: React.FC<NodePanelProps> = ({ onAddNode }) => {
 
           <div style={{ display: 'grid', gap: '8px' }}>
             {category.nodes.map((node) => (
-              node.hasInput 
+              (node as any).hasInput 
                 ? renderInputNode(node, category.color)
                 : renderRegularNode(node, category.color)
             ))}

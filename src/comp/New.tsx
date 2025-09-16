@@ -42,6 +42,7 @@ const getHandleDataType = (nodeId: string, handleId: string | undefined, handleT
   if (!node) return null;
   
   const nodeType = node.data.nodeType;
+  const config = node.data.config as any;
   
   if (handleType === 'source') {
     // 输出端类型
@@ -69,6 +70,22 @@ const getHandleDataType = (nodeId: string, handleId: string | undefined, handleT
       case 'logical':
         return HandleDataType.BOOLEAN;
       case 'condition':
+        // Condition节点的输入端类型取决于配置
+        const conditionType = config?.conditionType || 'if';
+        if (conditionType === 'else') {
+          // Else节点只接受执行类型
+          return HandleDataType.EXECUTION;
+        } else if (conditionType === 'elseif') {
+          // ElseIf节点有两个输入：布尔条件和执行流
+          if (handleId === 'condition') {
+            return HandleDataType.BOOLEAN;
+          } else if (handleId === 'execution') {
+            return HandleDataType.EXECUTION;
+          }
+        } else {
+          // If节点只接受布尔条件
+          return HandleDataType.BOOLEAN;
+        }
         return HandleDataType.BOOLEAN;
       case 'output':
         return HandleDataType.NUMBER;
@@ -355,6 +372,8 @@ const ComparisonNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
 
 // 条件节点组件
 const ConditionNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
+  const conditionType = (data.config.conditionType as string) || 'if';
+  
   return (
     <div style={{
       background: '#f3e5f5',
@@ -365,31 +384,79 @@ const ConditionNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       textAlign: 'center',
       position: 'relative'
     }}>
-      {/* 单输入：圆形端口 */}
-      <Handle
-        type="target"
-        position={Position.Left}
-        className="circle"
-      />
-      <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Condition</div>
-      <div style={{ fontSize: '12px', color: '#666' }}>
-        {data.config.conditionType || 'if'}
+      {/* 输入端Handle - 根据类型不同而不同 */}
+      {conditionType === 'else' ? (
+        // Else节点：只有执行输入
+        <Handle
+          type="target"
+          position={Position.Left}
+          id="execution"
+          className="circle"
+        />
+      ) : conditionType === 'elseif' ? (
+        // ElseIf节点：条件输入和执行输入
+        <>
+          <Handle
+            type="target"
+            position={Position.Left}
+            id="condition"
+            className="circle"
+            style={{ top: '30%' }}
+          />
+          <Handle
+            type="target"
+            position={Position.Left}
+            id="execution"
+            className="circle"
+            style={{ top: '70%' }}
+          />
+        </>
+      ) : (
+        // If节点：只有条件输入
+        <Handle
+          type="target"
+          position={Position.Left}
+          id="condition"
+          className="circle"
+        />
+      )}
+      
+      <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+        {conditionType === 'if' ? 'If' : 
+         conditionType === 'elseif' ? 'Else If' : 'Else'}
       </div>
-      {/* 多输出：方形端口 */}
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="true"
-        className="square"
-        style={{ top: '40%' }}
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="false"
-        className="square"
-        style={{ top: '60%' }}
-      />
+      <div style={{ fontSize: '12px', color: '#666' }}>
+        {conditionType}
+      </div>
+      
+      {/* 输出端Handle - 根据类型不同而不同 */}
+      {conditionType === 'else' ? (
+        // Else节点：只有一个输出
+        <Handle
+          type="source"
+          position={Position.Right}
+          id="output"
+          className="square"
+        />
+      ) : (
+        // If和ElseIf节点：true和false两个输出
+        <>
+          <Handle
+            type="source"
+            position={Position.Right}
+            id="true"
+            className="square"
+            style={{ top: '40%' }}
+          />
+          <Handle
+            type="source"
+            position={Position.Right}
+            id="false"
+            className="square"
+            style={{ top: '60%' }}
+          />
+        </>
+      )}
     </div>
   );
 };
@@ -617,7 +684,13 @@ export default function PsyLangBuilder() {
         const nodeType = targetNode.data.nodeType;
         
         // 单连接的节点类型和Handle
-        if (nodeType === 'output' || nodeType === 'label' || nodeType === 'condition') {
+        if (nodeType === 'output' || nodeType === 'label') {
+          return true;
+        }
+        
+        // Condition节点的连接限制
+        if (nodeType === 'condition') {
+          // 所有condition节点的输入都是单连接
           return true;
         }
         
@@ -668,11 +741,17 @@ export default function PsyLangBuilder() {
       logical: { operator: '&&' },
       output: { outputId: 1 },
       label: { labelId: 1, value: 'High' },
-      condition: { conditionType: 'if' }
+      condition: { conditionType: 'if' },
+      if: { conditionType: 'if' },
+      elseif: { conditionType: 'elseif' },
+      else: { conditionType: 'else' }
     };
 
     // 使用自定义配置或默认配置
     const finalConfig = customConfig || nodeConfigs[nodeType as keyof typeof nodeConfigs] || {};
+    
+    // 将 if/elseif/else 映射到 condition 节点类型
+    const actualNodeType = (nodeType === 'if' || nodeType === 'elseif' || nodeType === 'else') ? 'condition' : nodeType;
     
     // 根据节点类型和配置生成标签
     let nodeLabel = '';
@@ -704,17 +783,26 @@ export default function PsyLangBuilder() {
       case 'condition':
         nodeLabel = `Condition`;
         break;
+      case 'if':
+        nodeLabel = `If`;
+        break;
+      case 'elseif':
+        nodeLabel = `Else If`;
+        break;
+      case 'else':
+        nodeLabel = `Else`;
+        break;
       default:
         nodeLabel = nodeType;
     }
 
     const newNode: Node = {
       id: newNodeId,
-      type: nodeType,
+      type: actualNodeType,
       position: { x: Math.random() * 400 + 100, y: Math.random() * 300 + 100 },
       data: {
         label: nodeLabel,
-        nodeType: nodeType as PsyLangNodeData['nodeType'],
+        nodeType: actualNodeType as PsyLangNodeData['nodeType'],
         config: finalConfig
       }
     };
