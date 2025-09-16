@@ -29,6 +29,63 @@ const getHandleConnectionCount = (nodeId: string, handleId: string | undefined, 
   }).length;
 };
 
+// 连接点类型定义
+export enum HandleDataType {
+  NUMBER = 'number',    // 数字节点
+  BOOLEAN = 'boolean',  // 布尔节点
+  EXECUTION = 'execution' // 执行节点
+}
+
+// 获取节点Handle的数据类型
+const getHandleDataType = (nodeId: string, handleId: string | undefined, handleType: 'source' | 'target', nodes: Node[]): HandleDataType | null => {
+  const node = nodes.find(n => n.id === nodeId);
+  if (!node) return null;
+  
+  const nodeType = node.data.nodeType;
+  
+  if (handleType === 'source') {
+    // 输出端类型
+    switch (nodeType) {
+      case 'answer':
+      case 'score':
+      case 'number':
+      case 'math':
+        return HandleDataType.NUMBER;
+      case 'comparison':
+      case 'logical':
+        return HandleDataType.BOOLEAN;
+      case 'condition':
+        return HandleDataType.EXECUTION;
+      default:
+        return null;
+    }
+  } else {
+    // 输入端类型
+    switch (nodeType) {
+      case 'math':
+        return HandleDataType.NUMBER;
+      case 'comparison':
+        return HandleDataType.NUMBER;
+      case 'logical':
+        return HandleDataType.BOOLEAN;
+      case 'condition':
+        return HandleDataType.BOOLEAN;
+      case 'output':
+        return HandleDataType.NUMBER;
+      case 'label':
+        return HandleDataType.EXECUTION;
+      default:
+        return null;
+    }
+  }
+};
+
+// 检查两个Handle类型是否兼容
+const areHandleTypesCompatible = (sourceType: HandleDataType | null, targetType: HandleDataType | null): boolean => {
+  if (!sourceType || !targetType) return false;
+  return sourceType === targetType;
+};
+
 // 创建带连接状态检测的Handle组件
 interface SmartHandleProps {
   type: 'source' | 'target';
@@ -541,11 +598,21 @@ export default function PsyLangBuilder() {
       
       if (!source || !target) return;
       
-      // 获取目标节点信息
+      // 获取源节点和目标节点信息
+      const sourceNode = nodes.find(n => n.id === source);
       const targetNode = nodes.find(n => n.id === target);
-      if (!targetNode) return;
+      if (!sourceNode || !targetNode) return;
       
-      // 检查目标Handle是否为单连接类型
+      // 1. 检查Handle数据类型是否兼容
+      const sourceDataType = getHandleDataType(source, sourceHandle || undefined, 'source', nodes);
+      const targetDataType = getHandleDataType(target, targetHandle || undefined, 'target', nodes);
+      
+      if (!areHandleTypesCompatible(sourceDataType, targetDataType)) {
+        console.log(`类型不匹配: ${sourceDataType} -> ${targetDataType}`);
+        return; // 拒绝连接
+      }
+      
+      // 2. 检查目标Handle是否为单连接类型
       const isSingleConnection = () => {
         const nodeType = targetNode.data.nodeType;
         
@@ -556,7 +623,7 @@ export default function PsyLangBuilder() {
         
         // 数学节点的双输入Handle是单连接
         if (nodeType === 'math') {
-          const operator = targetNode.data.config.operator as string;
+          const operator = (targetNode.data.config as any).operator as string;
           if ((operator === '-' || operator === '/') && 
               (targetHandle === 'input-a' || targetHandle === 'input-b')) {
             return true;
@@ -572,9 +639,9 @@ export default function PsyLangBuilder() {
         return false;
       };
       
-      // 如果是单连接Handle，检查是否已有连接
+      // 3. 如果是单连接Handle，检查是否已有连接
       if (isSingleConnection()) {
-        const existingConnections = getHandleConnectionCount(target, targetHandle, 'target', edges);
+        const existingConnections = getHandleConnectionCount(target, targetHandle || undefined, 'target', edges);
         if (existingConnections > 0) {
           console.log('单连接Handle已有连接，拒绝新连接');
           return; // 拒绝连接
@@ -582,6 +649,7 @@ export default function PsyLangBuilder() {
       }
       
       // 允许连接
+      console.log(`连接成功: ${sourceDataType} -> ${targetDataType}`);
       setEdges((eds) => addEdge(params, eds));
     },
     [nodes, edges],
