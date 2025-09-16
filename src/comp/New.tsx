@@ -760,7 +760,7 @@ const initialNodes: Node[] = [
     data: { 
       label: 'Sum', 
       nodeType: 'sum', 
-      config: undefined 
+      config: {} 
     },
   },
   {
@@ -791,7 +791,7 @@ const initialNodes: Node[] = [
     data: { 
       label: 'Sum', 
       nodeType: 'sum', 
-      config: undefined 
+      config: {} 
     },
   },
   {
@@ -801,7 +801,7 @@ const initialNodes: Node[] = [
     data: { 
       label: 'Sum', 
       nodeType: 'sum', 
-      config: undefined 
+      config: {} 
     },
   },
   

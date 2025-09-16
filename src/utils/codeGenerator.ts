@@ -28,7 +28,7 @@ export class PsyLangCodeGenerator {
         'config' in data &&
         typeof data.label === 'string' &&
         typeof data.nodeType === 'string' &&
-        typeof data.config === 'object'
+        (typeof data.config === 'object' || data.config === undefined)
       );
     });
     this.edges = edges;
