@@ -196,7 +196,7 @@ export class PsyLangCodeGenerator {
         }
         
         const expression = this.generateExpression(dependencies[0]);
-        assignments.push(`Output[${data.config.outputId || 0}] = ${expression}`);
+        assignments.push(`Output[${data.config.outputId || 1}] = ${expression}`);
       }
     });
 
@@ -225,14 +225,14 @@ export class PsyLangCodeGenerator {
           const dependencies = Array.from(this.dependencyGraph.get(nodeId) || []);
           if (dependencies.length > 0) {
             const expression = this.generateExpression(dependencies[0]);
-            statements.push(`${indent}Output[${data.config.outputId || 0}] = ${expression};`);
+            statements.push(`${indent}Output[${data.config.outputId || 1}] = ${expression}`);
           }
           break;
         }
         case 'label': {
           const value = data.config.value || 'Unknown';
-          const labelId = data.config.labelId || 0;
-          statements.push(`${indent}Label[${labelId}] = "${value}";`);
+          const labelId = data.config.labelId || 1;
+          statements.push(`${indent}Label[${labelId}] = "${value}"`);
           break;
         }
         case 'assign': {
@@ -241,7 +241,7 @@ export class PsyLangCodeGenerator {
           if (valueInput) {
             const expression = this.generateExpression(valueInput);
             const targetOutput = data.config.targetOutput || 1;
-            statements.push(`${indent}Output[${targetOutput}] = ${expression};`);
+            statements.push(`${indent}Output[${targetOutput}] = ${expression}`);
           }
           break;
         }
@@ -389,9 +389,9 @@ export class PsyLangCodeGenerator {
     // 为独立的Label节点生成简单赋值语句
     labelNodes.forEach(node => {
       const data = node.data as PsyLangNodeData;
-      const labelId = data.config.labelId || 0;
+      const labelId = data.config.labelId || 1;
       const value = data.config.value || 'Unknown';
-      conditions.push(`Label[${labelId}] = "${value}";`);
+      conditions.push(`Label[${labelId}] = "${value}"`);
     });
     
     return conditions;

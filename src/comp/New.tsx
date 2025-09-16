@@ -150,7 +150,7 @@ const areHandleTypesCompatible = (sourceType: HandleDataType | null, targetType:
 export interface PsyLangNodeData {
   label: string;
   // 更新节点类型定义，包含 sum
-  nodeType: 'answer' | 'score' | 'sum' | 'math' | 'comparison' | 'logical' | 'output' | 'label' | 'condition' | 'number';
+  nodeType: 'answer' | 'score' | 'sum' | 'math' | 'comparison' | 'logical' | 'output' | 'label' | 'condition' | 'number' | 'assign';
   config: Record<string, unknown>;
   inputs?: Array<{ id: string; type: string; label: string }>;
   outputs?: Array<{ id: string; type: string; label: string }>;
