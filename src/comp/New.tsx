@@ -85,7 +85,7 @@ const AnswerNode: React.FC<{ data: PsyLangNodeData; id: string }> = ({ data, id 
       <Handle
         type="source"
         position={Position.Right}
-        className="circle"
+        className="square"
       />
     </div>
   );
@@ -110,7 +110,7 @@ const ScoreNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       <Handle
         type="source"
         position={Position.Right}
-        className="circle"
+        className="square"
       />
     </div>
   );
@@ -135,7 +135,7 @@ const NumberNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       <Handle
         type="source"
         position={Position.Right}
-        className="circle"
+        className="square"
       />
     </div>
   );
