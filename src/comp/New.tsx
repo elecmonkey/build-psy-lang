@@ -1416,6 +1416,28 @@ export default function PsyLangBuilder() {
     const generator = new PsyLangCodeGenerator(nodes, edges);
     return generator.generate();
   }, [nodes, edges]);
+
+  // 复制代码到剪贴板
+  const handleCopyCode = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(generatedCode.code || '');
+      // 这里可以添加成功提示，但为了简洁暂不添加
+    } catch (error) {
+      console.warn('Failed to copy code:', error);
+      // 降级方案：使用 document.execCommand
+      const textArea = document.createElement('textarea');
+      textArea.value = generatedCode.code || '';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+      } catch (fallbackError) {
+        console.warn('Fallback copy also failed:', fallbackError);
+      }
+      document.body.removeChild(textArea);
+    }
+  }, [generatedCode.code]);
  
   return (
     <div style={{ width: '100%', height: '100vh', display: 'flex', overflow: 'hidden' }}>
@@ -1484,9 +1506,46 @@ export default function PsyLangBuilder() {
         }}>
           <div style={{ marginBottom: '10px', fontWeight: 'bold', color: '#4CAF50', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>生成的 PsyLang 代码:</span>
-            {generatedCode.errors.length === 0 && (
-              <span style={{ color: '#4CAF50', fontSize: '12px' }}>✅ 语法正确</span>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              {generatedCode.errors.length === 0 && (
+                <span style={{ color: '#4CAF50', fontSize: '12px' }}>✅ 语法正确</span>
+              )}
+              {/* 复制按钮 */}
+              <button
+                onClick={handleCopyCode}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  borderRadius: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f0f0f0';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+                title="复制代码"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#4CAF50"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+              </button>
+            </div>
           </div>
           
           {generatedCode.errors.length > 0 && (
