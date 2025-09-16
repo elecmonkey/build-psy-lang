@@ -709,30 +709,21 @@ const nodeTypes: NodeTypes = {
 
 // 初始节点和边
 const initialNodes: Node[] = [
+  // 输入节点
   {
     id: '1',
-    type: 'answer',
-    position: { x: 50, y: 50 },
+    type: 'sum',
+    position: { x: 200, y: 80 },
     data: { 
-      label: 'Answer[1]', 
-      nodeType: 'answer', 
-      config: { questionId: 1 } 
+      label: 'Sum', 
+      nodeType: 'sum', 
+      config: {} 
     },
   },
   {
     id: '2',
-    type: 'answer',
-    position: { x: 50, y: 150 },
-    data: { 
-      label: 'Answer[2]', 
-      nodeType: 'answer', 
-      config: { questionId: 2 } 
-    },
-  },
-  {
-    id: '3',
     type: 'score',
-    position: { x: 50, y: 250 },
+    position: { x: 200, y: 170 },
     data: { 
       label: 'Score[1]', 
       nodeType: 'score', 
@@ -740,39 +731,210 @@ const initialNodes: Node[] = [
     },
   },
   {
-    id: '4',
-    type: 'math',
-    position: { x: 300, y: 100 },
+    id: '3',
+    type: 'answer',
+    position: { x: 200, y: 350 },
     data: { 
-      label: 'Add', 
-      nodeType: 'math', 
-      config: { operator: '+' } 
+      label: 'Answer[1]', 
+      nodeType: 'answer', 
+      config: { questionId: 1 } 
+    },
+  },
+  // 额外的Sum节点用于Label分级
+  {
+    id: '26',
+    type: 'sum',
+    position: { x: 240, y: 600 },
+    data: { 
+      label: 'Sum', 
+      nodeType: 'sum', 
+      config: {} 
+    },
+  },
+  {
+    id: '27',
+    type: 'sum',
+    position: { x: 250, y: 800 },
+    data: { 
+      label: 'Sum', 
+      nodeType: 'sum', 
+      config: {} 
+    },
+  },
+  
+  // 数字节点
+  {
+    id: '4',
+    type: 'number',
+    position: { x: 220, y: 250 },
+    data: { 
+      label: '2', 
+      nodeType: 'number', 
+      config: { value: 2 } 
     },
   },
   {
     id: '5',
-    type: 'math',
-    position: { x: 300, y: 200 },
+    type: 'number',
+    position: { x: 220, y: 450 },
     data: { 
-      label: 'Multiply', 
+      label: '1', 
+      nodeType: 'number', 
+      config: { value: 1 } 
+    },
+  },
+  {
+    id: '6',
+    type: 'number',
+    position: { x: 800, y: 300 },
+    data: { 
+      label: '0', 
+      nodeType: 'number', 
+      config: { value: 0 } 
+    },
+  },
+  {
+    id: '7',
+    type: 'number',
+    position: { x: 800, y: 500 },
+    data: { 
+      label: '1', 
+      nodeType: 'number', 
+      config: { value: 1 } 
+    },
+  },
+  {
+    id: '8',
+    type: 'number',
+    position: { x: 250, y: 700 },
+    data: { 
+      label: '70', 
+      nodeType: 'number', 
+      config: { value: 70 } 
+    },
+  },
+  {
+    id: '9',
+    type: 'number',
+    position: { x: 250, y: 900 },
+    data: { 
+      label: '50', 
+      nodeType: 'number', 
+      config: { value: 50 } 
+    },
+  },
+  
+  // 运算节点
+  {
+    id: '10',
+    type: 'math',
+    position: { x: 400, y: 200 },
+    data: { 
+      label: '*', 
       nodeType: 'math', 
       config: { operator: '*' } 
     },
   },
   {
-    id: '6',
-    type: 'output',
-    position: { x: 550, y: 100 },
+    id: '11',
+    type: 'math',
+    position: { x: 600, y: 150 },
     data: { 
-      label: 'Output[0]', 
-      nodeType: 'output', 
-      config: { outputId: 0 } 
+      label: '+', 
+      nodeType: 'math', 
+      config: { operator: '+' } 
     },
   },
   {
-    id: '7',
+    id: '12',
+    type: 'comparison',
+    position: { x: 400, y: 400 },
+    data: { 
+      label: '==', 
+      nodeType: 'comparison', 
+      config: { operator: '==' } 
+    },
+  },
+  {
+    id: '13',
+    type: 'comparison',
+    position: { x: 420, y: 700 },
+    data: { 
+      label: '>=', 
+      nodeType: 'comparison', 
+      config: { operator: '>=' } 
+    },
+  },
+  {
+    id: '14',
+    type: 'comparison',
+    position: { x: 450, y: 825 },
+    data: { 
+      label: '>=', 
+      nodeType: 'comparison', 
+      config: { operator: '>=' } 
+    },
+  },
+  
+  // 条件节点
+  {
+    id: '15',
+    type: 'condition',
+    position: { x: 600, y: 400 },
+    data: { 
+      label: 'If', 
+      nodeType: 'condition', 
+      config: { conditionType: 'if' } 
+    },
+  },
+  {
+    id: '16',
+    type: 'condition',
+    position: { x: 600, y: 700 },
+    data: { 
+      label: 'If', 
+      nodeType: 'condition', 
+      config: { conditionType: 'if' } 
+    },
+  },
+  {
+    id: '17',
+    type: 'condition',
+    position: { x: 850, y: 825 },
+    data: { 
+      label: 'Else If', 
+      nodeType: 'condition', 
+      config: { conditionType: 'elseif' } 
+    },
+  },
+  
+  // 赋值节点 (与if节点中线400对齐，上下对称)
+  {
+    id: '18',
+    type: 'assign',
+    position: { x: 950, y: 300 },
+    data: { 
+      label: 'Assign', 
+      nodeType: 'assign', 
+      config: { targetOutput: 2 } 
+    },
+  },
+  {
+    id: '19',
+    type: 'assign',
+    position: { x: 950, y: 450 },
+    data: { 
+      label: 'Assign', 
+      nodeType: 'assign', 
+      config: { targetOutput: 2 } 
+    },
+  },
+  
+  // 输出节点
+  {
+    id: '20',
     type: 'output',
-    position: { x: 550, y: 200 },
+    position: { x: 800, y: 150 },
     data: { 
       label: 'Output[1]', 
       nodeType: 'output', 
@@ -780,30 +942,100 @@ const initialNodes: Node[] = [
     },
   },
   {
-    id: '8',
+    id: '21',
+    type: 'output',
+    position: { x: 1200, y: 300 },
+    data: { 
+      label: 'Output[2]', 
+      nodeType: 'output', 
+      config: { outputId: 2 } 
+    },
+  },
+  {
+    id: '22',
+    type: 'output',
+    position: { x: 1200, y: 500 },
+    data: { 
+      label: 'Output[2]', 
+      nodeType: 'output', 
+      config: { outputId: 2 } 
+    },
+  },
+  
+  // 标签节点
+  {
+    id: '23',
     type: 'label',
-    position: { x: 550, y: 300 },
+    position: { x: 950, y: 650 },
     data: { 
       label: 'Label[0]', 
       nodeType: 'label', 
-      config: { labelId: 0, value: 'High' } 
+      config: { labelId: 0, value: '正常' } 
+    },
+  },
+  {
+    id: '24',
+    type: 'label',
+    position: { x: 1150, y: 675 },
+    data: { 
+      label: 'Label[0]', 
+      nodeType: 'label', 
+      config: { labelId: 0, value: '轻微' } 
+    },
+  },
+  {
+    id: '25',
+    type: 'label',
+    position: { x: 1150, y: 800 },
+    data: { 
+      label: 'Label[0]', 
+      nodeType: 'label', 
+      config: { labelId: 0, value: '异常' } 
     },
   },
 ];
 
 const initialEdges: Edge[] = [
-  { id: 'e1-4', source: '1', target: '4' },
-  { id: 'e2-4', source: '2', target: '4' },
-  { id: 'e3-5', source: '3', target: '5' },
-  { id: 'e4-6', source: '4', target: '6' },
-  { id: 'e5-7', source: '5', target: '7' },
+  // Output1 = Sum + 2*Score1 的连接
+  { id: 'e2-10', source: '2', target: '10' },  // Score1 -> 乘法
+  { id: 'e4-10', source: '4', target: '10' },  // 2 -> 乘法
+  { id: 'e1-11', source: '1', target: '11' },  // Sum -> 加法
+  { id: 'e10-11', source: '10', target: '11' }, // 乘法结果 -> 加法
+  { id: 'e11-20', source: '11', target: '20' }, // 加法结果 -> Output1
+  
+  // If Answer==1 则 Output2=0 否则 Output2=1 的连接 (通过assign节点)
+  { id: 'e3-12', source: '3', target: '12', targetHandle: 'input-a' },  // Answer1 -> 比较input-a
+  { id: 'e5-12', source: '5', target: '12', targetHandle: 'input-b' },  // 1 -> 比较input-b
+  { id: 'e12-15', source: '12', target: '15', targetHandle: 'condition' }, // 比较结果 -> If条件
+  
+  // true分支: 0 -> assign -> Output2
+  { id: 'e6-18', source: '6', target: '18', targetHandle: 'value' },  // 0 -> assign(value)
+  { id: 'e15-18', source: '15', target: '18', sourceHandle: 'true', targetHandle: 'execution' }, // If true -> assign(execution)
+  { id: 'e18-21', source: '18', target: '21' },  // assign -> Output2
+  
+  // false分支: 1 -> assign -> Output2
+  { id: 'e7-19', source: '7', target: '19', targetHandle: 'value' },  // 1 -> assign(value)
+  { id: 'e15-19', source: '15', target: '19', sourceHandle: 'false', targetHandle: 'execution' }, // If false -> assign(execution)
+  { id: 'e19-22', source: '19', target: '22' },  // assign -> Output2
+  
+  // Label分级的连接 (使用独立的Sum节点)
+  { id: 'e26-13', source: '26', target: '13', targetHandle: 'input-a' },  // Sum -> 比较70 input-a
+  { id: 'e8-13', source: '8', target: '13', targetHandle: 'input-b' },  // 70 -> 比较 input-b
+  { id: 'e27-14', source: '27', target: '14', targetHandle: 'input-a' },  // Sum -> 比较50 input-a
+  { id: 'e9-14', source: '9', target: '14', targetHandle: 'input-b' },  // 50 -> 比较 input-b
+  { id: 'e13-16', source: '13', target: '16', targetHandle: 'condition' }, // >=70 -> If
+  { id: 'e14-17', source: '14', target: '17', targetHandle: 'condition' }, // >=50 -> ElseIf
+  { id: 'e16-17', source: '16', target: '17', sourceHandle: 'false', targetHandle: 'execution' }, // If false -> ElseIf
+  { id: 'e16-23', source: '16', target: '23', sourceHandle: 'true' },   // >=70 -> 正常
+  { id: 'e17-24', source: '17', target: '24', sourceHandle: 'true' },   // >=50 -> 轻微
+  { id: 'e17-25', source: '17', target: '25', sourceHandle: 'false' },  // <50 -> 异常
 ];
  
 export default function PsyLangBuilder() {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
   const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
-  const [nodeIdCounter, setNodeIdCounter] = useState(10);
+  const [nodeIdCounter, setNodeIdCounter] = useState(28);
 
  
   const onNodesChange = useCallback(
@@ -1159,6 +1391,7 @@ export default function PsyLangBuilder() {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             fitView
+            proOptions={{ hideAttribution: true }}
             style={{ background: '#fafafa' }}
             selectNodesOnDrag={false}
           />
