@@ -323,6 +323,43 @@ const AssignNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
         className="square"
         style={{ top: '50%' }}
       />
+      
+      {/* 端口标注 */}
+      <div style={{
+        position: 'absolute',
+        top: '15px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        fontSize: '8px',
+        color: '#f57c00',
+        fontWeight: 'bold'
+      }}>
+        执行
+      </div>
+      
+      <div style={{
+        position: 'absolute',
+        left: '15px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        fontSize: '8px',
+        color: '#f57c00',
+        fontWeight: 'bold'
+      }}>
+        数值
+      </div>
+      
+      <div style={{
+        position: 'absolute',
+        right: '15px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        fontSize: '8px',
+        color: '#f57c00',
+        fontWeight: 'bold'
+      }}>
+        目标
+      </div>
     </div>
   );
 };
@@ -462,15 +499,53 @@ const ConditionNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
             className="circle"
             style={{ top: '75%' }}
           />
+          {/* ElseIf节点的输入标注 */}
+          <div style={{
+            position: 'absolute',
+            left: '15px',
+            top: '25%',
+            transform: 'translateY(-50%)',
+            fontSize: '8px',
+            color: '#7b1fa2',
+            fontWeight: 'bold'
+          }}>
+            条件
+          </div>
+          <div style={{
+            position: 'absolute',
+            left: '15px',
+            top: '75%',
+            transform: 'translateY(-50%)',
+            fontSize: '8px',
+            color: '#7b1fa2',
+            fontWeight: 'bold'
+          }}>
+            执行
+          </div>
         </>
       ) : (
         // If节点：只有条件输入
-        <Handle
-          type="target"
-          position={Position.Left}
-          id="condition"
-          className="circle"
-        />
+        <>
+          <Handle
+            type="target"
+            position={Position.Left}
+            id="condition"
+            className="circle"
+            style={{ top: '50%' }}
+          />
+          {/* If节点的输入标注 */}
+          <div style={{
+            position: 'absolute',
+            left: '15px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            fontSize: '8px',
+            color: '#7b1fa2',
+            fontWeight: 'bold'
+          }}>
+            条件
+          </div>
+        </>
       )}
       
       <div style={{ 
@@ -495,8 +570,7 @@ const ConditionNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
         id="true"
         className="square"
         style={{ 
-          top: '30%',
-          transform: 'translateY(-50%)'
+          top: '30%'
         }}
       />
       <Handle
@@ -505,8 +579,7 @@ const ConditionNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
         id="false"
         className="square"
         style={{ 
-          top: '70%',
-          transform: 'translateY(-50%)'
+          top: '70%'
         }}
       />
       
@@ -514,24 +587,24 @@ const ConditionNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       <div style={{
         position: 'absolute',
         right: '20px',
-        top: '25%',
+        top: '30%',
         fontSize: '9px',
         color: '#7b1fa2',
         fontWeight: 'bold',
         transform: 'translateY(-50%)'
       }}>
-        T
+        如此
       </div>
       <div style={{
         position: 'absolute',
         right: '20px',
-        top: '75%',
+        top: '70%',
         fontSize: '9px',
         color: '#7b1fa2',
         fontWeight: 'bold',
         transform: 'translateY(-50%)'
       }}>
-        F
+        否则
       </div>
     </div>
   );
