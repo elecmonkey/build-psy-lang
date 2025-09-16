@@ -1,0 +1,93 @@
+/* ReactFlow Handle 连接状态样式 */
+
+/* 默认状态：空心 */
+.react-flow__handle {
+  background: white !important;
+  border: 2px solid currentColor !important;
+}
+
+/* 连接状态：实心 */
+.react-flow__handle.connecting,
+.react-flow__handle.valid {
+  background: currentColor !important;
+}
+
+/* 针对不同节点类型的Handle颜色 */
+.react-flow__node-answer .react-flow__handle {
+  border-color: #01579b;
+  color: #01579b;
+}
+
+.react-flow__node-score .react-flow__handle {
+  border-color: #4a148c;
+  color: #4a148c;
+}
+
+.react-flow__node-number .react-flow__handle {
+  border-color: #3f51b5;
+  color: #3f51b5;
+}
+
+.react-flow__node-math .react-flow__handle {
+  border-color: #e65100;
+  color: #e65100;
+}
+
+.react-flow__node-comparison .react-flow__handle {
+  border-color: #f57c00;
+  color: #f57c00;
+}
+
+.react-flow__node-logical .react-flow__handle {
+  border-color: #616161;
+  color: #616161;
+}
+
+.react-flow__node-output .react-flow__handle {
+  border-color: #2e7d32;
+  color: #2e7d32;
+}
+
+.react-flow__node-label .react-flow__handle {
+  border-color: #c2185b;
+  color: #c2185b;
+}
+
+.react-flow__node-condition .react-flow__handle {
+  border-color: #7b1fa2;
+  color: #7b1fa2;
+}
+
+/* 方形Handle */
+.react-flow__handle.square {
+  width: 16px !important;
+  height: 16px !important;
+  border-radius: 2px !important;
+}
+
+/* 圆形Handle */
+.react-flow__handle.circle {
+  width: 12px !important;
+  height: 12px !important;
+  border-radius: 50% !important;
+}
+
+/* 小圆形Handle（用于双输入） */
+.react-flow__handle.circle-small {
+  width: 10px !important;
+  height: 10px !important;
+  border-radius: 50% !important;
+}
+
+/* Output节点特殊样式 - 移除ReactFlow默认的节点外框 */
+.react-flow__node-output {
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.react-flow__node-output .react-flow__node-default {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
