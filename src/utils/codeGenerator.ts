@@ -1,6 +1,9 @@
 import type { Node, Edge } from '@xyflow/react';
 import { type PsyLangNodeData } from '../comp/New';
 
+// 定义泛型Node类型
+type PsyLangNode = Node<PsyLangNodeData>;
+
 interface CodeGenerationResult {
   code: string;
   errors: string[];
@@ -8,13 +11,26 @@ interface CodeGenerationResult {
 }
 
 export class PsyLangCodeGenerator {
-  private nodes: Node[];
+  private nodes: PsyLangNode[];
   private edges: Edge[];
   private dependencyGraph: Map<string, Set<string>>;
   private reverseGraph: Map<string, Set<string>>;
 
   constructor(nodes: Node[], edges: Edge[]) {
-    this.nodes = nodes;
+    // 类型守卫：确保节点数据符合PsyLangNodeData接口
+    this.nodes = nodes.filter((node): node is PsyLangNode => {
+      const data = node.data;
+      return (
+        typeof data === 'object' && 
+        data !== null &&
+        'label' in data && 
+        'nodeType' in data && 
+        'config' in data &&
+        typeof data.label === 'string' &&
+        typeof data.nodeType === 'string' &&
+        typeof data.config === 'object'
+      );
+    });
     this.edges = edges;
     this.dependencyGraph = new Map();
     this.reverseGraph = new Map();
@@ -78,7 +94,7 @@ export class PsyLangCodeGenerator {
     return result;
   }
 
-  private getNodeById(nodeId: string): Node | null {
+  private getNodeById(nodeId: string): PsyLangNode | null {
     return this.nodes.find(n => n.id === nodeId) || null;
   }
 
@@ -91,7 +107,7 @@ export class PsyLangCodeGenerator {
     const node = this.getNodeById(nodeId);
     if (!node) return `[未知节点:${nodeId}]`;
 
-    const data = node.data as PsyLangNodeData;
+    const data = node.data;
 
     switch (data.nodeType) {
       case 'answer':
@@ -178,10 +194,10 @@ export class PsyLangCodeGenerator {
 
   private generateAssignments(): string[] {
     const assignments: string[] = [];
-    const outputNodes = this.nodes.filter(n => (n.data as PsyLangNodeData).nodeType === 'output');
+    const outputNodes = this.nodes.filter(n => n.data.nodeType === 'output');
     
     outputNodes.forEach(node => {
-      const data = node.data as PsyLangNodeData;
+      const data = node.data;
       const dependencies = Array.from(this.dependencyGraph.get(node.id) || []);
       
       if (dependencies.length > 0) {
@@ -189,7 +205,7 @@ export class PsyLangCodeGenerator {
         const directSource = dependencies[0];
         const sourceNode = this.getNodeById(directSource);
         
-        if (sourceNode && (sourceNode.data as PsyLangNodeData).nodeType === 'assign') {
+        if (sourceNode && sourceNode.data.nodeType === 'assign') {
           // 如果连接到 assign 节点，跳过生成赋值语句
           // assign 节点的代码应该在控制流中生成
           return;
@@ -218,7 +234,7 @@ export class PsyLangCodeGenerator {
       const node = this.getNodeById(nodeId);
       if (!node) return;
       
-      const data = node.data as PsyLangNodeData;
+      const data = node.data;
       
       switch (data.nodeType) {
         case 'output': {
@@ -256,7 +272,7 @@ export class PsyLangCodeGenerator {
     const node = this.getNodeById(nodeId);
     if (!node) return [];
     
-    const data = node.data as PsyLangNodeData;
+    const data = node.data;
     if (data.nodeType !== 'condition') return [];
     
     const conditionType = (data.config.conditionType as string) || 'if';
@@ -279,7 +295,7 @@ export class PsyLangCodeGenerator {
       if (falseBranch.length > 0) {
         const nextCondition = falseBranch.find(nodeId => {
           const nextNode = this.getNodeById(nodeId);
-          return nextNode && (nextNode.data as PsyLangNodeData).nodeType === 'condition';
+          return nextNode && nextNode.data.nodeType === 'condition';
         });
         
         if (nextCondition) {
@@ -323,7 +339,7 @@ export class PsyLangCodeGenerator {
       if (falseBranch.length > 0) {
         const nextCondition = falseBranch.find(nodeId => {
           const nextNode = this.getNodeById(nodeId);
-          return nextNode && (nextNode.data as PsyLangNodeData).nodeType === 'condition';
+          return nextNode && nextNode.data.nodeType === 'condition';
         });
         
         if (nextCondition) {
@@ -357,7 +373,7 @@ export class PsyLangCodeGenerator {
     
     // 找到所有的if节点（条件链的起始点）
     const ifNodes = this.nodes.filter(n => {
-      const data = n.data as PsyLangNodeData;
+      const data = n.data;
       return data.nodeType === 'condition' && 
              (data.config.conditionType as string) === 'if';
     });
@@ -373,14 +389,14 @@ export class PsyLangCodeGenerator {
     
     // 处理没有连接到条件链的独立Label节点
     const labelNodes = this.nodes.filter(n => {
-      const data = n.data as PsyLangNodeData;
+      const data = n.data;
       if (data.nodeType !== 'label') return false;
       
       // 检查是否连接到条件节点
       const hasConditionInput = this.edges.some(edge => {
         const sourceNode = this.getNodeById(edge.source);
         return edge.target === n.id && sourceNode && 
-               (sourceNode.data as PsyLangNodeData).nodeType === 'condition';
+               sourceNode.data.nodeType === 'condition';
       });
       
       return !hasConditionInput;
@@ -388,7 +404,7 @@ export class PsyLangCodeGenerator {
     
     // 为独立的Label节点生成简单赋值语句
     labelNodes.forEach(node => {
-      const data = node.data as PsyLangNodeData;
+      const data = node.data;
       const labelId = data.config.labelId || 1;
       const value = data.config.value || 'Unknown';
       conditions.push(`Label[${labelId}] = "${value}"`);
@@ -432,9 +448,9 @@ export class PsyLangCodeGenerator {
     }
 
     // 验证生成的代码
-    const hasOutput = this.nodes.some(n => (n.data as PsyLangNodeData).nodeType === 'output');
+    const hasOutput = this.nodes.some(n => n.data.nodeType === 'output');
     const hasInput = this.nodes.some(n => {
-      const nodeType = (n.data as PsyLangNodeData).nodeType;
+      const nodeType = n.data.nodeType;
       return nodeType === 'answer' || nodeType === 'score' || nodeType === 'sum';
     });
 
@@ -449,7 +465,7 @@ export class PsyLangCodeGenerator {
     const unconnectedNodes = this.nodes.filter(node => {
       const hasIncoming = this.edges.some(edge => edge.target === node.id);
       const hasOutgoing = this.edges.some(edge => edge.source === node.id);
-      const nodeType = (node.data as PsyLangNodeData).nodeType;
+      const nodeType = node.data.nodeType;
       
       // 输入节点不需要传入连接，输出节点不需要传出连接
       if (nodeType === 'answer' || nodeType === 'score' || nodeType === 'sum') {

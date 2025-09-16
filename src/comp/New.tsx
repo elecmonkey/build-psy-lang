@@ -78,7 +78,7 @@ const getHandleDataType = (nodeId: string, handleId: string | undefined, handleT
   if (!node) return null;
   
   const nodeType = node.data.nodeType;
-  const config = node.data.config as any;
+  const config = node.data.config as Record<string, unknown>;
   
   if (handleType === 'source') {
     // 输出端类型
@@ -108,7 +108,7 @@ const getHandleDataType = (nodeId: string, handleId: string | undefined, handleT
         return HandleDataType.NUMBER;
       case 'logical':
         return HandleDataType.BOOLEAN;
-      case 'condition':
+      case 'condition': {
         // Condition节点的输入端类型取决于配置
         const conditionType = config?.conditionType || 'if';
         if (conditionType === 'elseif') {
@@ -123,6 +123,7 @@ const getHandleDataType = (nodeId: string, handleId: string | undefined, handleT
           return HandleDataType.BOOLEAN;
         }
         return HandleDataType.BOOLEAN;
+      }
       case 'output':
         return HandleDataType.NUMBER;
       case 'assign':
@@ -149,7 +150,7 @@ const areHandleTypesCompatible = (sourceType: HandleDataType | null, targetType:
 
 
 // 节点类型定义
-export interface PsyLangNodeData {
+export interface PsyLangNodeData extends Record<string, unknown> {
   label: string;
   // 更新节点类型定义，包含 sum
   nodeType: 'answer' | 'score' | 'sum' | 'math' | 'comparison' | 'logical' | 'output' | 'label' | 'condition' | 'number' | 'assign';
@@ -159,7 +160,8 @@ export interface PsyLangNodeData {
 }
 
 // Answer 输入节点组件
-const AnswerNode: React.FC<{ data: PsyLangNodeData; id: string }> = ({ data, id }) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const AnswerNode: React.FC<{ data: PsyLangNodeData; id: string }> = ({ data, id: _id }) => {
   return (
     <div style={{
       background: '#e1f5fe',
@@ -172,7 +174,7 @@ const AnswerNode: React.FC<{ data: PsyLangNodeData; id: string }> = ({ data, id 
     }}>
       <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Answer</div>
       <div style={{ fontSize: '12px', color: '#666' }}>
-        题目 {data.config.questionId || 1}
+        题目 {(data.config.questionId as number) || 1}
       </div>
       <SmartHandle
         type="source"
@@ -198,7 +200,7 @@ const ScoreNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
     }}>
       <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Score</div>
       <div style={{ fontSize: '12px', color: '#666' }}>
-        题目 {data.config.questionId || 1}
+        题目 {(data.config.questionId as number) || 1}
       </div>
       <SmartHandle
         type="source"
@@ -211,7 +213,8 @@ const ScoreNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
 };
 
 // Sum 总分输入节点组件
-const SumNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const SumNode: React.FC<{ data: PsyLangNodeData }> = ({ data: _data }) => {
   return (
     <div style={{
       background: '#e8f5e8',
@@ -250,7 +253,7 @@ const NumberNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
     }}>
       <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Number</div>
       <div style={{ fontSize: '14px', color: '#333' }}>
-        {data.config.value || 0}
+        {(data.config.value as number) || 0}
       </div>
       <SmartHandle
         type="source"
@@ -264,7 +267,7 @@ const NumberNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
 
 // 数学运算节点组件
 const MathNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
-  const operator = data.config.operator || '+';
+  const operator = (data.config.operator as string) || '+';
   const isMultiInput = operator === '+' || operator === '*'; // 加法和乘法支持多输入
   
   return (
@@ -323,7 +326,8 @@ const MathNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
 };
 
 // Assign 赋值节点组件
-const AssignNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const AssignNode: React.FC<{ data: PsyLangNodeData }> = ({ data: _data }) => {
   return (
     <div style={{
       background: '#fff3e0',
@@ -431,7 +435,7 @@ const OutputNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       />
       <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Output</div>
       <div style={{ fontSize: '12px', color: '#666' }}>
-        Output[{data.config.outputId || 1}]
+        Output[{(data.config.outputId as number) || 1}]
       </div>
     </div>
   );
@@ -459,7 +463,7 @@ const LogicalNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       />
       <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Logic</div>
       <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#616161' }}>
-        {data.config.operator || '&&'}
+        {(data.config.operator as string) || '&&'}
       </div>
       {/* 多输出：方形端口 */}
       <SmartHandle
@@ -503,7 +507,7 @@ const ComparisonNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       />
       <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Compare</div>
       <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#f57c00' }}>
-        {data.config.operator || '>'}
+        {(data.config.operator as string) || '>'}
       </div>
       {/* 多输出：方形端口 */}
       <SmartHandle
@@ -685,10 +689,10 @@ const LabelNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       />
       <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Label</div>
       <div style={{ fontSize: '12px', color: '#666' }}>
-        Label[{data.config.labelId || 0}]
+        Label[{(data.config.labelId as number) || 0}]
       </div>
       <div style={{ fontSize: '10px', color: '#888', marginTop: '5px' }}>
-        "{data.config.value || 'value'}"
+        "{(data.config.value as string) || 'value'}"
       </div>
     </div>
   );
@@ -1049,7 +1053,8 @@ export default function PsyLangBuilder() {
       if (selectionChanges.length > 0) {
         const selected = changes
           .filter(change => change.type === 'select' && change.selected)
-          .map(change => change.id);
+          .map(change => 'id' in change ? change.id : '')
+          .filter(id => id !== '');
         setSelectedNodes(selected);
       }
     },
@@ -1105,7 +1110,7 @@ export default function PsyLangBuilder() {
         
         // 数学节点的双输入Handle是单连接
         if (nodeType === 'math') {
-          const operator = (targetNode.data.config as any).operator as string;
+          const operator = (targetNode.data.config as Record<string, unknown>).operator as string;
           if ((operator === '-' || operator === '/') && 
               (targetHandle === 'input-a' || targetHandle === 'input-b')) {
             return true;
@@ -1169,28 +1174,28 @@ export default function PsyLangBuilder() {
     let nodeLabel = '';
     switch (nodeType) {
       case 'answer':
-        nodeLabel = `Answer[${(finalConfig as any).questionId || 1}]`;
+        nodeLabel = `Answer[${((finalConfig as Record<string, unknown>).questionId as number) || 1}]`;
         break;
       case 'score':
-        nodeLabel = `Score[${(finalConfig as any).questionId || 1}]`;
+        nodeLabel = `Score[${((finalConfig as Record<string, unknown>).questionId as number) || 1}]`;
         break;
       case 'number':
-        nodeLabel = `${(finalConfig as any).value || 0}`;
+        nodeLabel = `${((finalConfig as Record<string, unknown>).value as number) || 0}`;
         break;
       case 'math':
-        nodeLabel = `${(finalConfig as any).operator || '+'}`;
+        nodeLabel = `${((finalConfig as Record<string, unknown>).operator as string) || '+'}`;
         break;
       case 'comparison':
-        nodeLabel = `${(finalConfig as any).operator || '>'}`;
+        nodeLabel = `${((finalConfig as Record<string, unknown>).operator as string) || '>'}`;
         break;
       case 'logical':
-        nodeLabel = `${(finalConfig as any).operator || '&&'}`;
+        nodeLabel = `${((finalConfig as Record<string, unknown>).operator as string) || '&&'}`;
         break;
       case 'output':
-        nodeLabel = `Output[${(finalConfig as any).outputId || 1}]`;
+        nodeLabel = `Output[${((finalConfig as Record<string, unknown>).outputId as number) || 1}]`;
         break;
       case 'label':
-        nodeLabel = `Label[${(finalConfig as any).labelId || 1}]`;
+        nodeLabel = `Label[${((finalConfig as Record<string, unknown>).labelId as number) || 1}]`;
         break;
       case 'condition':
         nodeLabel = `Condition`;
@@ -1224,8 +1229,8 @@ export default function PsyLangBuilder() {
       const oldNode = prevNodes.find(n => n.id === nodeId);
       if (!oldNode) return prevNodes;
       
-      const oldConfig = oldNode.data.config;
-      const newConfig = { ...oldConfig, ...newData.config };
+      const oldConfig = (oldNode.data.config as Record<string, unknown>) || {};
+      const newConfig = { ...oldConfig, ...(newData.config) };
       const nodeType = oldNode.data.nodeType;
       
       // 检查是否需要处理连接线
@@ -1234,7 +1239,7 @@ export default function PsyLangBuilder() {
       let clearConnections: string[] = []; // 需要清除的连接类型
       
       if (nodeType === 'math') {
-        const oldOperator = oldConfig.operator as string;
+        const oldOperator = (oldConfig.operator as string) || '';
         const newOperator = newConfig.operator as string;
         
         if (oldOperator !== newOperator) {
@@ -1252,7 +1257,7 @@ export default function PsyLangBuilder() {
           needsEdgeUpdate = true;
         }
       } else if (nodeType === 'condition') {
-        const oldConditionType = oldConfig.conditionType as string;
+        const oldConditionType = (oldConfig.conditionType as string) || '';
         const newConditionType = newConfig.conditionType as string;
         
         if (oldConditionType !== newConditionType) {
@@ -1265,7 +1270,7 @@ export default function PsyLangBuilder() {
           needsEdgeUpdate = true;
         }
       } else if (nodeType === 'comparison') {
-        const oldOperator = oldConfig.operator as string;
+        const oldOperator = (oldConfig.operator as string) || '';
         const newOperator = newConfig.operator as string;
         
         if (oldOperator !== newOperator) {
@@ -1274,7 +1279,7 @@ export default function PsyLangBuilder() {
           needsEdgeUpdate = true;
         }
       } else if (nodeType === 'logical') {
-        const oldOperator = oldConfig.operator as string;
+        const oldOperator = (oldConfig.operator as string) || '';
         const newOperator = newConfig.operator as string;
         
         if (oldOperator !== newOperator) {
@@ -1338,7 +1343,10 @@ export default function PsyLangBuilder() {
   const selectedNode = useMemo(() => {
     if (selectedNodes.length === 1) {
       const node = nodes.find(n => n.id === selectedNodes[0]);
-      return node ? { id: node.id, data: node.data as PsyLangNodeData } : null;
+      if (node && node.data && typeof node.data === 'object' && 'nodeType' in node.data && 'label' in node.data) {
+        return { id: node.id, data: node.data as unknown as PsyLangNodeData };
+      }
+      return null;
     }
     return null;
   }, [selectedNodes, nodes]);

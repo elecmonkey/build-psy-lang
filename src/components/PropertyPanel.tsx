@@ -52,7 +52,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
               <input
                 type="number"
                 min="1"
-                value={data.config.questionId || 1}
+                value={(data.config?.questionId as number) || 1}
                 onChange={(e) => updateConfig('questionId', parseInt(e.target.value) || 1)}
                 style={{
                   width: 'calc(100% - 4px)',
@@ -77,7 +77,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
               <input
                 type="number"
                 min="1"
-                value={data.config.questionId || 1}
+                value={(data.config?.questionId as number) || 1}
                 onChange={(e) => updateConfig('questionId', parseInt(e.target.value) || 1)}
                 style={{
                   width: 'calc(100% - 4px)',
@@ -100,7 +100,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
                 运算符
               </label>
               <select
-                value={data.config.operator || '+'}
+                value={(data.config?.operator as string) || '+'}
                 onChange={(e) => updateConfig('operator', e.target.value)}
                 style={{
                   width: 'calc(100% - 4px)',
@@ -129,7 +129,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
                 比较运算符
               </label>
               <select
-                value={data.config.operator || '>'}
+                value={(data.config?.operator as string) || '>'}
                 onChange={(e) => updateConfig('operator', e.target.value)}
                 style={{
                   width: 'calc(100% - 4px)',
@@ -160,7 +160,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
                 逻辑运算符
               </label>
               <select
-                value={data.config.operator || '&&'}
+                value={(data.config?.operator as string) || '&&'}
                 onChange={(e) => updateConfig('operator', e.target.value)}
                 style={{
                   width: 'calc(100% - 4px)',
@@ -189,7 +189,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
               <input
                 type="number"
                 min="0"
-                value={data.config.outputId || 0}
+                value={(data.config?.outputId as number) || 0}
                 onChange={(e) => updateConfig('outputId', parseInt(e.target.value) || 0)}
                 style={{
                   width: 'calc(100% - 4px)',
@@ -201,7 +201,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
                 }}
               />
               <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
-                对应 Output[{data.config.outputId || 0}]
+                对应 Output[{(data.config?.outputId as number) || 0}]
               </div>
             </div>
           </div>
@@ -217,7 +217,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
               <input
                 type="number"
                 min="0"
-                value={data.config.labelId || 0}
+                value={(data.config?.labelId as number) || 0}
                 onChange={(e) => updateConfig('labelId', parseInt(e.target.value) || 0)}
                 style={{
                   width: 'calc(100% - 4px)',
@@ -229,7 +229,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
                 }}
               />
               <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
-                对应 Label[{data.config.labelId || 0}]
+                对应 Label[{(data.config?.labelId as number) || 0}]
               </div>
             </div>
             <div style={{ marginBottom: '15px' }}>
@@ -238,7 +238,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
               </label>
               <input
                 type="text"
-                value={data.config.value || ''}
+                value={(data.config?.value as string) || ''}
                 onChange={(e) => updateConfig('value', e.target.value)}
                 placeholder="High, Medium, Low..."
                 style={{
@@ -262,7 +262,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
                 条件类型
               </label>
               <select
-                value={data.config.conditionType || 'if'}
+                value={(data.config?.conditionType as string) || 'if'}
                 onChange={(e) => updateConfig('conditionType', e.target.value)}
                 style={{
                   width: 'calc(100% - 4px)',
@@ -291,7 +291,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
               <input
                 type="number"
                 min="1"
-                value={data.config.targetOutput || 1}
+                value={(data.config?.targetOutput as number) || 1}
                 onChange={(e) => updateConfig('targetOutput', parseInt(e.target.value) || 1)}
                 style={{
                   width: 'calc(100% - 4px)',
@@ -316,7 +316,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
               <input
                 type="number"
                 step="any"
-                value={data.config.value || 0}
+                value={(data.config?.value as number) || 0}
                 onChange={(e) => updateConfig('value', parseFloat(e.target.value) || 0)}
                 style={{
                   width: 'calc(100% - 4px)',
