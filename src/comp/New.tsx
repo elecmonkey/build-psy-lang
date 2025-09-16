@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { ReactFlow, applyNodeChanges, applyEdgeChanges, addEdge, Handle, Position } from '@xyflow/react';
 import type { Node, Edge, NodeTypes, NodeChange, EdgeChange, Connection } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -6,6 +6,42 @@ import './New.css';
 import NodePanel from '../components/NodePanel';
 import PropertyPanel from '../components/PropertyPanel';
 import { PsyLangCodeGenerator } from '../utils/codeGenerator';
+
+// localStorage 键名
+const STORAGE_KEYS = {
+  NODES: 'psylang-builder-nodes',
+  EDGES: 'psylang-builder-edges',
+  NODE_COUNTER: 'psylang-builder-node-counter'
+};
+
+// 保存数据到 localStorage
+const saveToLocalStorage = (nodes: Node[], edges: Edge[], nodeCounter: number) => {
+  try {
+    localStorage.setItem(STORAGE_KEYS.NODES, JSON.stringify(nodes));
+    localStorage.setItem(STORAGE_KEYS.EDGES, JSON.stringify(edges));
+    localStorage.setItem(STORAGE_KEYS.NODE_COUNTER, JSON.stringify(nodeCounter));
+  } catch (error) {
+    console.warn('Failed to save to localStorage:', error);
+  }
+};
+
+// 从 localStorage 加载数据
+const loadFromLocalStorage = () => {
+  try {
+    const savedNodes = localStorage.getItem(STORAGE_KEYS.NODES);
+    const savedEdges = localStorage.getItem(STORAGE_KEYS.EDGES);
+    const savedCounter = localStorage.getItem(STORAGE_KEYS.NODE_COUNTER);
+    
+    return {
+      nodes: savedNodes ? JSON.parse(savedNodes) : null,
+      edges: savedEdges ? JSON.parse(savedEdges) : null,
+      nodeCounter: savedCounter ? JSON.parse(savedCounter) : null
+    };
+  } catch (error) {
+    console.warn('Failed to load from localStorage:', error);
+    return { nodes: null, edges: null, nodeCounter: null };
+  }
+};
 
 // 连接点类型定义
 export const HandleDataType = {
@@ -1038,10 +1074,18 @@ const initialEdges: Edge[] = [
 ];
  
 export default function PsyLangBuilder() {
-  const [nodes, setNodes] = useState(initialNodes);
-  const [edges, setEdges] = useState(initialEdges);
+  // 从 localStorage 加载保存的数据
+  const savedData = loadFromLocalStorage();
+  
+  const [nodes, setNodes] = useState(savedData.nodes || initialNodes);
+  const [edges, setEdges] = useState(savedData.edges || initialEdges);
   const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
-  const [nodeIdCounter, setNodeIdCounter] = useState(28);
+  const [nodeIdCounter, setNodeIdCounter] = useState(savedData.nodeCounter || 28);
+
+  // 自动保存功能：当 nodes, edges, nodeIdCounter 变化时保存到 localStorage
+  useEffect(() => {
+    saveToLocalStorage(nodes, edges, nodeIdCounter);
+  }, [nodes, edges, nodeIdCounter]);
 
  
   const onNodesChange = useCallback(
