@@ -111,6 +111,7 @@ const NodePanel: React.FC<NodePanelProps> = ({ onAddNode }) => {
       nodes: [
         { type: 'answer', label: 'Answer', icon: 'A', description: '答案输入', color: '#e1f5fe', hasInput: true },
         { type: 'score', label: 'Score', icon: 'S', description: '分数输入', color: '#f3e5f5', hasInput: true },
+        { type: 'sum', label: 'Sum', icon: '∑', description: '总分', color: '#e8f5e8' },
         { type: 'number', label: '数字', icon: '#', description: '自由数字', color: '#e8eaf6', hasInput: true },
       ]
     },

@@ -49,6 +49,7 @@ const getHandleDataType = (nodeId: string, handleId: string | undefined, handleT
     switch (nodeType) {
       case 'answer':
       case 'score':
+      case 'sum':
       case 'number':
       case 'math':
         return HandleDataType.NUMBER;
@@ -187,6 +188,31 @@ const ScoreNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
       <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Score</div>
       <div style={{ fontSize: '12px', color: '#666' }}>
         题目 {data.config.questionId || 1}
+      </div>
+      <Handle
+        type="source"
+        position={Position.Right}
+        className="square"
+      />
+    </div>
+  );
+};
+
+// Sum 总分输入节点组件
+const SumNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
+  return (
+    <div style={{
+      background: '#e8f5e8',
+      border: '2px solid #388e3c',
+      borderRadius: '8px',
+      padding: '10px',
+      minWidth: '120px',
+      textAlign: 'center',
+      position: 'relative'
+    }}>
+      <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Sum</div>
+      <div style={{ fontSize: '12px', color: '#666' }}>
+        总分
       </div>
       <Handle
         type="source"
@@ -643,6 +669,7 @@ const LabelNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
 const nodeTypes: NodeTypes = {
   answer: AnswerNode,
   score: ScoreNode,
+  sum: SumNode,
   number: NumberNode,
   math: MathNode,
   comparison: ComparisonNode,
@@ -891,6 +918,7 @@ export default function PsyLangBuilder() {
     const nodeConfigs: Record<string, Record<string, unknown>> = {
       answer: { questionId: 1 },
       score: { questionId: 1 },
+      sum: {},  // Sum节点不需要配置
       number: { value: 0 },
       math: { operator: '+' },
       comparison: { operator: '>' },

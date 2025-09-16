@@ -303,6 +303,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
     const typeMap: Record<string, string> = {
       'answer': 'Answer 输入节点',
       'score': 'Score 输入节点',
+      'sum': 'Sum 总分节点',
       'number': '数字节点',
       'math': '数学运算节点',
       'comparison': '比较运算节点',

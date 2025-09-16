@@ -100,6 +100,9 @@ export class PsyLangCodeGenerator {
       case 'score':
         return `Score[${data.config.questionId || 1}]`;
 
+      case 'sum':
+        return `Sum`;
+        
       case 'number':
         return `${data.config.value || 0}`;
         
@@ -432,11 +435,11 @@ export class PsyLangCodeGenerator {
     const hasOutput = this.nodes.some(n => (n.data as PsyLangNodeData).nodeType === 'output');
     const hasInput = this.nodes.some(n => {
       const nodeType = (n.data as PsyLangNodeData).nodeType;
-      return nodeType === 'answer' || nodeType === 'score';
+      return nodeType === 'answer' || nodeType === 'score' || nodeType === 'sum';
     });
 
     if (!hasInput) {
-      warnings.push('没有输入节点 (Answer/Score)');
+      warnings.push('没有输入节点 (Answer/Score/Sum)');
     }
     if (!hasOutput) {
       warnings.push('没有输出节点 (Output)');
@@ -449,7 +452,7 @@ export class PsyLangCodeGenerator {
       const nodeType = (node.data as PsyLangNodeData).nodeType;
       
       // 输入节点不需要传入连接，输出节点不需要传出连接
-      if (nodeType === 'answer' || nodeType === 'score') {
+      if (nodeType === 'answer' || nodeType === 'score' || nodeType === 'sum') {
         return !hasOutgoing;
       }
       if (nodeType === 'output' || nodeType === 'label') {
