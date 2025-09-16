@@ -241,7 +241,6 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNode, onUpdateNod
               >
                 <option value="if">If (如果)</option>
                 <option value="elseif">Else If (否则如果)</option>
-                <option value="else">Else (否则)</option>
               </select>
             </div>
           </div>

@@ -72,10 +72,7 @@ const getHandleDataType = (nodeId: string, handleId: string | undefined, handleT
       case 'condition':
         // Condition节点的输入端类型取决于配置
         const conditionType = config?.conditionType || 'if';
-        if (conditionType === 'else') {
-          // Else节点只接受执行类型
-          return HandleDataType.EXECUTION;
-        } else if (conditionType === 'elseif') {
+        if (conditionType === 'elseif') {
           // ElseIf节点有两个输入：布尔条件和执行流
           if (handleId === 'condition') {
             return HandleDataType.BOOLEAN;
@@ -374,36 +371,22 @@ const ComparisonNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
 const ConditionNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
   const conditionType = (data.config.conditionType as string) || 'if';
   
-  // 根据节点类型调整高度
-  const getNodeHeight = () => {
-    if (conditionType === 'else') return '80px';  // Else节点只有一个输出，稍小
-    return '100px';  // If和ElseIf节点有两个输出，需要更高
-  };
-  
   return (
     <div style={{
       background: '#f3e5f5',
       border: '2px solid #7b1fa2',
       borderRadius: '8px',
-      padding: '15px 10px',  // 增加上下padding
+      padding: '15px 10px',
       minWidth: '120px',
-      height: getNodeHeight(),  // 动态设置高度
+      height: '100px',  // 统一高度，都有两个输出
       textAlign: 'center',
       position: 'relative',
       display: 'flex',
       flexDirection: 'column',
-      justifyContent: 'center'  // 垂直居中内容
+      justifyContent: 'center'
     }}>
-      {/* 输入端Handle - 根据类型不同而不同 */}
-      {conditionType === 'else' ? (
-        // Else节点：只有执行输入
-        <Handle
-          type="target"
-          position={Position.Left}
-          id="execution"
-          className="circle"
-        />
-      ) : conditionType === 'elseif' ? (
+      {/* 输入端Handle */}
+      {conditionType === 'elseif' ? (
         // ElseIf节点：条件输入和执行输入
         <>
           <Handle
@@ -411,14 +394,14 @@ const ConditionNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
             position={Position.Left}
             id="condition"
             className="circle"
-            style={{ top: '25%' }}  // 调整位置避免重叠
+            style={{ top: '25%' }}
           />
           <Handle
             type="target"
             position={Position.Left}
             id="execution"
             className="circle"
-            style={{ top: '75%' }}  // 调整位置避免重叠
+            style={{ top: '75%' }}
           />
         </>
       ) : (
@@ -436,8 +419,7 @@ const ConditionNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
         marginBottom: '5px',
         fontSize: '14px'
       }}>
-        {conditionType === 'if' ? 'If' : 
-         conditionType === 'elseif' ? 'Else If' : 'Else'}
+        {conditionType === 'if' ? 'If' : 'Else If'}
       </div>
       <div style={{ 
         fontSize: '11px', 
@@ -447,64 +429,51 @@ const ConditionNode: React.FC<{ data: PsyLangNodeData }> = ({ data }) => {
         {conditionType}
       </div>
       
-      {/* 输出端Handle - 根据类型不同而不同 */}
-      {conditionType === 'else' ? (
-        // Else节点：只有一个输出
-        <Handle
-          type="source"
-          position={Position.Right}
-          id="output"
-          className="square"
-        />
-      ) : (
-        // If和ElseIf节点：true和false两个输出
-        <>
-          <Handle
-            type="source"
-            position={Position.Right}
-            id="true"
-            className="square"
-            style={{ 
-              top: '30%',  // 调整位置，给更多空间
-              transform: 'translateY(-50%)'
-            }}
-          />
-          <Handle
-            type="source"
-            position={Position.Right}
-            id="false"
-            className="square"
-            style={{ 
-              top: '70%',  // 调整位置，给更多空间
-              transform: 'translateY(-50%)'
-            }}
-          />
-          
-          {/* 添加视觉标签 */}
-          <div style={{
-            position: 'absolute',
-            right: '20px',
-            top: '25%',
-            fontSize: '9px',
-            color: '#7b1fa2',
-            fontWeight: 'bold',
-            transform: 'translateY(-50%)'
-          }}>
-            T
-          </div>
-          <div style={{
-            position: 'absolute',
-            right: '20px',
-            top: '75%',
-            fontSize: '9px',
-            color: '#7b1fa2',
-            fontWeight: 'bold',
-            transform: 'translateY(-50%)'
-          }}>
-            F
-          </div>
-        </>
-      )}
+      {/* 输出端Handle - 统一为true和false两个输出 */}
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="true"
+        className="square"
+        style={{ 
+          top: '30%',
+          transform: 'translateY(-50%)'
+        }}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="false"
+        className="square"
+        style={{ 
+          top: '70%',
+          transform: 'translateY(-50%)'
+        }}
+      />
+      
+      {/* 视觉标签 */}
+      <div style={{
+        position: 'absolute',
+        right: '20px',
+        top: '25%',
+        fontSize: '9px',
+        color: '#7b1fa2',
+        fontWeight: 'bold',
+        transform: 'translateY(-50%)'
+      }}>
+        T
+      </div>
+      <div style={{
+        position: 'absolute',
+        right: '20px',
+        top: '75%',
+        fontSize: '9px',
+        color: '#7b1fa2',
+        fontWeight: 'bold',
+        transform: 'translateY(-50%)'
+      }}>
+        F
+      </div>
     </div>
   );
 };
@@ -791,15 +760,14 @@ export default function PsyLangBuilder() {
       label: { labelId: 1, value: 'High' },
       condition: { conditionType: 'if' },
       if: { conditionType: 'if' },
-      elseif: { conditionType: 'elseif' },
-      else: { conditionType: 'else' }
+      elseif: { conditionType: 'elseif' }
     };
 
     // 使用自定义配置或默认配置
     const finalConfig = customConfig || nodeConfigs[nodeType as keyof typeof nodeConfigs] || {};
     
-    // 将 if/elseif/else 映射到 condition 节点类型
-    const actualNodeType = (nodeType === 'if' || nodeType === 'elseif' || nodeType === 'else') ? 'condition' : nodeType;
+    // 将 if/elseif 映射到 condition 节点类型
+    const actualNodeType = (nodeType === 'if' || nodeType === 'elseif') ? 'condition' : nodeType;
     
     // 根据节点类型和配置生成标签
     let nodeLabel = '';
@@ -836,9 +804,6 @@ export default function PsyLangBuilder() {
         break;
       case 'elseif':
         nodeLabel = `Else If`;
-        break;
-      case 'else':
-        nodeLabel = `Else`;
         break;
       default:
         nodeLabel = nodeType;

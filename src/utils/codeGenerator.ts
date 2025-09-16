@@ -246,7 +246,7 @@ export class PsyLangCodeGenerator {
       const trueStatements = this.generateBranchStatements(trueBranch, indent + '    ');
       lines.push(...trueStatements);
       
-      // 检查false分支是否连接到elseif或else
+      // 检查false分支是否连接到elseif
       const falseBranch = this.getConnectedNodesFromHandle(nodeId, 'false');
       if (falseBranch.length > 0) {
         const nextCondition = falseBranch.find(nodeId => {
@@ -319,15 +319,6 @@ export class PsyLangCodeGenerator {
         lines.push(`${indent}}`);
       }
       
-    } else if (conditionType === 'else') {
-      // Else节点：无条件执行
-      lines.push(`{`);
-      
-      // 生成else分支的语句
-      const outputBranch = this.getConnectedNodesFromHandle(nodeId, 'output');
-      const statements = this.generateBranchStatements(outputBranch, indent + '    ');
-      lines.push(...statements);
-      lines.push(`${indent}}`);
     }
     
     return lines;
