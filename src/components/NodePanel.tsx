@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import HelpModal from './HelpModal';
 
 interface NodeConfig {
   questionId?: number;
@@ -36,6 +37,7 @@ const NodePanel: React.FC<NodePanelProps> = ({ onAddNode }) => {
   const [outputError, setOutputError] = useState('');
   const [labelError, setLabelError] = useState('');
   const [numberError, setNumberError] = useState('');
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
 
   const validateIndex = (value: string): boolean => {
     const num = parseInt(value);
@@ -405,15 +407,56 @@ const NodePanel: React.FC<NodePanelProps> = ({ onAddNode }) => {
       overflowY: 'auto',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     }}>
-      <h3 style={{
-        margin: '0 0 20px 0',
-        fontSize: '16px',
-        fontWeight: '600',
-        color: '#333',
-        textAlign: 'center'
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: '20px'
       }}>
-        节点工具箱
-      </h3>
+        <h3 style={{
+          margin: 0,
+          fontSize: '16px',
+          fontWeight: '600',
+          color: '#333'
+        }}>
+          节点工具箱
+        </h3>
+        <button
+          onClick={() => setIsHelpModalOpen(true)}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '4px',
+            borderRadius: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#f0f0f0';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }}
+          title="使用指南"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#666"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            <circle cx="12" cy="17" r="0.5" fill="#666"/>
+          </svg>
+        </button>
+      </div>
 
       {nodeCategories.map((category, categoryIndex) => (
         <div key={categoryIndex} style={{ marginBottom: '25px' }}>
@@ -438,26 +481,10 @@ const NodePanel: React.FC<NodePanelProps> = ({ onAddNode }) => {
         </div>
       ))}
 
-      <div style={{
-        marginTop: '30px',
-        padding: '15px',
-        background: '#e3f2fd',
-        borderRadius: '8px',
-        border: '1px solid #2196F3',
-        fontSize: '12px',
-        color: '#1976D2'
-      }}>
-        <div style={{ fontWeight: '600', marginBottom: '8px' }}>💡 使用提示</div>
-        <ul style={{ margin: 0, paddingLeft: '15px', lineHeight: '1.5' }}>
-          <li>Answer/Score需要输入&gt;=1的下标</li>
-          <li>Output/Label需要输入&gt;=1的编号</li>
-          <li>数字节点可输入任意数值</li>
-          <li>运算节点可选择具体类型</li>
-          <li>拖拽节点进行连接</li>
-          <li>选中节点查看属性</li>
-          <li>按Delete删除选中项</li>
-        </ul>
-      </div>
+      <HelpModal 
+        isOpen={isHelpModalOpen}
+        onClose={() => setIsHelpModalOpen(false)}
+      />
     </div>
   );
 };
