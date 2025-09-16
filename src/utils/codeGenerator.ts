@@ -156,9 +156,8 @@ export class PsyLangCodeGenerator {
       }
       
       case 'assign': {
-        // 赋值节点返回其输入的表达式
-        const valueInput = this.getConnectedNode(nodeId, 'value');
-        return valueInput ? this.generateExpression(valueInput, new Set(visited)) : '0';
+        // 赋值节点不能作为表达式使用，只能作为语句执行
+        return `[错误:赋值节点不能用于表达式]`;
       }
         
       default:
@@ -183,6 +182,16 @@ export class PsyLangCodeGenerator {
       const dependencies = Array.from(this.dependencyGraph.get(node.id) || []);
       
       if (dependencies.length > 0) {
+        // 检查直接连接的节点是否为 assign 节点
+        const directSource = dependencies[0];
+        const sourceNode = this.getNodeById(directSource);
+        
+        if (sourceNode && (sourceNode.data as PsyLangNodeData).nodeType === 'assign') {
+          // 如果连接到 assign 节点，跳过生成赋值语句
+          // assign 节点的代码应该在控制流中生成
+          return;
+        }
+        
         const expression = this.generateExpression(dependencies[0]);
         assignments.push(`Output[${data.config.outputId || 0}] = ${expression}`);
       }
@@ -445,6 +454,13 @@ export class PsyLangCodeGenerator {
       }
       if (nodeType === 'output' || nodeType === 'label') {
         return !hasIncoming;
+      }
+      // 赋值节点必须有执行输入端连接才能工作
+      if (nodeType === 'assign') {
+        const hasExecutionInput = this.edges.some(edge => 
+          edge.target === node.id && edge.targetHandle === 'execution'
+        );
+        return !hasExecutionInput;
       }
       return !hasIncoming && !hasOutgoing;
     });
