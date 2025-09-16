@@ -5,6 +5,7 @@ import '@xyflow/react/dist/style.css';
 import './New.css';
 import NodePanel from '../components/NodePanel';
 import PropertyPanel from '../components/PropertyPanel';
+import Toast from '../components/Toast';
 import { PsyLangCodeGenerator } from '../utils/codeGenerator';
 
 // localStorage 键名
@@ -1081,6 +1082,7 @@ export default function PsyLangBuilder() {
   const [edges, setEdges] = useState(savedData.edges || initialEdges);
   const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
   const [nodeIdCounter, setNodeIdCounter] = useState(savedData.nodeCounter || 28);
+  const [showCopyToast, setShowCopyToast] = useState(false);
 
   // 自动保存功能：当 nodes, edges, nodeIdCounter 变化时保存到 localStorage
   useEffect(() => {
@@ -1421,7 +1423,7 @@ export default function PsyLangBuilder() {
   const handleCopyCode = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(generatedCode.code || '');
-      // 这里可以添加成功提示，但为了简洁暂不添加
+      setShowCopyToast(true);
     } catch (error) {
       console.warn('Failed to copy code:', error);
       // 降级方案：使用 document.execCommand
@@ -1432,6 +1434,7 @@ export default function PsyLangBuilder() {
       textArea.select();
       try {
         document.execCommand('copy');
+        setShowCopyToast(true);
       } catch (fallbackError) {
         console.warn('Fallback copy also failed:', fallbackError);
       }
@@ -1580,6 +1583,14 @@ export default function PsyLangBuilder() {
       <PropertyPanel 
         selectedNode={selectedNode}
         onUpdateNode={onUpdateNode}
+      />
+      
+      {/* Toast 提示组件 */}
+      <Toast 
+        show={showCopyToast}
+        message="代码已复制到剪贴板"
+        type="success"
+        onClose={() => setShowCopyToast(false)}
       />
     </div>
   );
