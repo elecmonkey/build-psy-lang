@@ -1395,6 +1395,22 @@ export default function PsyLangBuilder() {
     return null;
   }, [selectedNodes, nodes]);
 
+  // 重置为初始状态
+  const handleResetToInitial = useCallback(() => {
+    setNodes(initialNodes);
+    setEdges(initialEdges);
+    setNodeIdCounter(28);
+    setSelectedNodes([]);
+  }, []);
+
+  // 清空画布
+  const handleClearCanvas = useCallback(() => {
+    setNodes([]);
+    setEdges([]);
+    setNodeIdCounter(1);
+    setSelectedNodes([]);
+  }, []);
+
   // 生成代码
   const generatedCode = useMemo(() => {
     const generator = new PsyLangCodeGenerator(nodes, edges);
@@ -1404,7 +1420,11 @@ export default function PsyLangBuilder() {
   return (
     <div style={{ width: '100%', height: '100vh', display: 'flex', overflow: 'hidden' }}>
       {/* 左侧工具面板 */}
-      <NodePanel onAddNode={onAddNode} />
+      <NodePanel 
+        onAddNode={onAddNode} 
+        onResetToInitial={handleResetToInitial}
+        onClearCanvas={handleClearCanvas}
+      />
       
       {/* 中间画布区域 */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
