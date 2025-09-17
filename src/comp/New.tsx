@@ -1092,7 +1092,7 @@ export default function PsyLangBuilder() {
  
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      setNodes((nds) => applyNodeChanges(changes, nds));
+      setNodes((nds: Node[]) => applyNodeChanges(changes, nds));
       
       // 处理节点选择
       const selectionChanges = changes.filter(change => change.type === 'select');
@@ -1108,7 +1108,7 @@ export default function PsyLangBuilder() {
   );
   
   const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+    (changes: EdgeChange[]) => setEdges((eds: Edge[]) => applyEdgeChanges(changes, eds)),
     [],
   );
   
@@ -1120,8 +1120,8 @@ export default function PsyLangBuilder() {
       if (!source || !target) return;
       
       // 获取源节点和目标节点信息
-      const sourceNode = nodes.find(n => n.id === source);
-      const targetNode = nodes.find(n => n.id === target);
+      const sourceNode = nodes.find((n: Node) => n.id === source);
+      const targetNode = nodes.find((n: Node) => n.id === target);
       if (!sourceNode || !targetNode) return;
       
       // 1. 检查Handle数据类型是否兼容
@@ -1174,7 +1174,7 @@ export default function PsyLangBuilder() {
       
       // 3. 如果是单连接Handle，检查是否已有连接
       if (isSingleConnection()) {
-        const existingConnections = edges.filter(edge => 
+        const existingConnections = edges.filter((edge: Edge) => 
           edge.target === target && (edge.targetHandle === targetHandle || (!edge.targetHandle && !targetHandle))
         ).length;
         if (existingConnections > 0) {
@@ -1185,14 +1185,14 @@ export default function PsyLangBuilder() {
       
       // 允许连接
       console.log(`连接成功: ${sourceDataType} -> ${targetDataType}`);
-      setEdges((eds) => addEdge(params, eds));
+      setEdges((eds: Edge[]) => addEdge(params, eds));
     },
     [nodes, edges],
   );
 
   const onAddNode = useCallback((nodeType: string, customConfig?: Record<string, unknown>) => {
     const newNodeId = nodeIdCounter.toString();
-    setNodeIdCounter(prev => prev + 1);
+    setNodeIdCounter((prev: number) => prev + 1);
     
     const nodeConfigs: Record<string, Record<string, unknown>> = {
       answer: { questionId: 1 },
@@ -1267,12 +1267,12 @@ export default function PsyLangBuilder() {
       }
     };
 
-    setNodes(prevNodes => [...prevNodes, newNode]);
+    setNodes((prevNodes: Node[]) => [...prevNodes, newNode]);
   }, [nodeIdCounter]);
 
   const onUpdateNode = useCallback((nodeId: string, newData: Partial<PsyLangNodeData>) => {
-    setNodes(prevNodes => {
-      const oldNode = prevNodes.find(n => n.id === nodeId);
+    setNodes((prevNodes: Node[]) => {
+      const oldNode = prevNodes.find((n: Node) => n.id === nodeId);
       if (!oldNode) return prevNodes;
       
       const oldConfig = (oldNode.data.config as Record<string, unknown>) || {};
@@ -1336,7 +1336,7 @@ export default function PsyLangBuilder() {
       }
       
       // 更新节点
-      const updatedNodes = prevNodes.map(node => {
+      const updatedNodes = prevNodes.map((node: Node) => {
         if (node.id === nodeId) {
           return {
             ...node,
@@ -1348,8 +1348,8 @@ export default function PsyLangBuilder() {
       
       // 如果需要更新连接线，立即处理
       if (needsEdgeUpdate) {
-        setEdges(prevEdges => {
-          return prevEdges.filter(edge => {
+        setEdges((prevEdges: Edge[]) => {
+          return prevEdges.filter((edge: Edge) => {
             const isTargetEdge = edge.target === nodeId;
             const isSourceEdge = edge.source === nodeId;
             
@@ -1388,7 +1388,7 @@ export default function PsyLangBuilder() {
   // 获取选中的节点
   const selectedNode = useMemo(() => {
     if (selectedNodes.length === 1) {
-      const node = nodes.find(n => n.id === selectedNodes[0]);
+      const node = nodes.find((n: Node) => n.id === selectedNodes[0]);
       if (node && node.data && typeof node.data === 'object' && 'nodeType' in node.data && 'label' in node.data) {
         return { id: node.id, data: node.data as unknown as PsyLangNodeData };
       }
