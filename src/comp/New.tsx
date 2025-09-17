@@ -1133,7 +1133,22 @@ export default function PsyLangBuilder() {
         return; // 拒绝连接
       }
       
-      // 2. 检查目标Handle是否为单连接类型
+      // 2. 检查IF-ELSEIF连接限制
+      const sourceNodeData = sourceNode.data as PsyLangNodeData;
+      const targetNodeData = targetNode.data as PsyLangNodeData;
+      
+      // 禁止IF的"如此"(true)端口连接到ELSEIF的"执行"(execution)端口
+      if (sourceNodeData.nodeType === 'condition' && 
+          sourceNodeData.config.conditionType === 'if' &&
+          sourceHandle === 'true' &&
+          targetNodeData.nodeType === 'condition' &&
+          targetNodeData.config.conditionType === 'elseif' &&
+          targetHandle === 'execution') {
+        console.log('禁止IF的true端口连接到ELSEIF的execution端口');
+        return; // 拒绝连接
+      }
+      
+      // 3. 检查目标Handle是否为单连接类型
       const isSingleConnection = () => {
         const nodeType = targetNode.data.nodeType;
         
@@ -1172,7 +1187,7 @@ export default function PsyLangBuilder() {
         return false;
       };
       
-      // 3. 如果是单连接Handle，检查是否已有连接
+      // 4. 如果是单连接Handle，检查是否已有连接
       if (isSingleConnection()) {
         const existingConnections = edges.filter((edge: Edge) => 
           edge.target === target && (edge.targetHandle === targetHandle || (!edge.targetHandle && !targetHandle))
